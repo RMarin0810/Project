@@ -145,7 +145,7 @@ function setDefaultDateTime() {
         <td>${task.email}</td>
         <td>${task.deadline}</td>
         <td>${task.personInCharge}</td>
-        <td><button class="complete-task">Completar</button></td>
+        <td><button class="complete-task">Ok</button></td>
         <td><input type="checkbox" class="select-task"></td>
       `;
       row.querySelector('.complete-task').addEventListener('click', () => completeTask(index));
