@@ -96,16 +96,6 @@ tr:nth-child(even) {
     text-align: right;
   }
 
-  table th, table td {
-  font-size: calc(1rem + 0.2vw); /* Ajuste dinámico del tamaño de la fuente */
-}
-  
-  @media (max-width: 600px) {
-  table th, table td {
-    font-size: calc(0.9rem + 0.3vw); /* Tamaño de fuente más pequeño para móviles */
-  }
-}
-
   .form-section input, .form-section select, .filter-section select, .button-group button {
     flex-basis: 70%;
   }
