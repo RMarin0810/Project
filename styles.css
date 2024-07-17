@@ -1,0 +1,102 @@
+body {
+  font-family: 'Calibri', sans-serif;
+  background-image: url('fondoP.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  width: 90%;
+  max-width: 1200px;
+  margin: auto;
+  padding: 20px;
+  background-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+h1 {
+  text-align: center;
+}
+
+.form-section, .filter-section {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.form-section label, .filter-section label {
+  flex-basis: 100%;
+  margin-right: 10px;
+  text-align: right;
+  margin-bottom: 5px;
+}
+
+.form-section input, .form-section select, .filter-section select {
+  flex-basis: 100%;
+  margin-bottom: 10px;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.button-group {
+  display: flex;
+  justify-content: center;
+  flex-basis: 100%;
+}
+
+.button-group button {
+  margin-left: 10px;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  background-color: AntiqueWhite;
+  cursor: pointer;
+}
+
+.button-group button:hover {
+  background-color: #e0ddd4;
+}
+
+.scrollable {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-align: left;
+  word-wrap: break-word;
+}
+
+th {
+  background-color: #f4f4f4;
+  text-align: center;
+}
+
+tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+@media (min-width: 600px) {
+  .form-section label, .filter-section label {
+    flex-basis: 20%;
+    text-align: right;
+  }
+
+  .form-section input, .form-section select, .filter-section select, .button-group button {
+    flex-basis: 70%;
+  }
+}
