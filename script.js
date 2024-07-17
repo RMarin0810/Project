@@ -187,8 +187,7 @@ function setDefaultDateTime() {
   }
 
   function sendCompletionEmail(task) {
-    // Aquí se puede integrar el servicio de correo electrónico
-    // Por ejemplo, usando SendGrid, Mailgun, etc.
+    // colocar el servicio de correo electrónico
     console.log(`Enviando correo a ${task.email} sobre la tarea completada: ${task.title}`);
   }
 
