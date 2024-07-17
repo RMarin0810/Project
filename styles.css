@@ -89,7 +89,7 @@ th, td {
 th {
   background-color: #f4f4f4;
   text-align: center;
-  font-size: 2.5vw; /* Ajuste del tamaño de fuente basado en el ancho de la ventana */
+  font-size: 2.0vw; /* 2.5Ajuste del tamaño de fuente basado en el ancho de la ventana */
 }
 
 tr:nth-child(even) {
@@ -98,7 +98,7 @@ tr:nth-child(even) {
 
 @media (min-width: 600px) {
   body {
-    font-size: 1.5vw; /* Ajuste del tamaño de fuente basado en el ancho de la ventana */
+    font-size: 1.0vw; /* 1.5Ajuste del tamaño de fuente basado en el ancho de la ventana */
   }
 
   h1 {
@@ -116,11 +116,11 @@ tr:nth-child(even) {
   }
 
   table {
-    font-size: 1.5vw; /* Ajuste del tamaño de fuente basado en el ancho de la ventana */
+    font-size: 1.0vw; /* 1.5Ajuste del tamaño de fuente basado en el ancho de la ventana */
   }
 
   th, td {
-    font-size: 1.5vw; /* Ajuste del tamaño de fuente basado en el ancho de la ventana */
+    font-size: 1.0vw; /* 1.5Ajuste del tamaño de fuente basado en el ancho de la ventana */
   }
 }
 
