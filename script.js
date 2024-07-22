@@ -42,11 +42,11 @@ function setDefaultDateTime() {
     const details = document.getElementById('details').value.trim();
     const dateTime = document.getElementById('date-time').value;
     const section = document.getElementById('section').value;
-    const email = document.getElementById('email').value.trim();
+    //const email = document.getElementById('email').value.trim();
     const deadline = document.getElementById('deadline').value;
-    const personInCharge = document.getElementById('person-in-charge').value.trim();
+    //const personInCharge = document.getElementById('person-in-charge').value.trim();
 
-    if (title === '' || details === '' || dateTime === '' || section === '' || email === '' || deadline === '' || personInCharge === '') {
+    if (title === '' || details === '' || dateTime === '' || section === '' || deadline === '') {
       alert('Por favor, complete todos los campos.');
       return;
     }
@@ -189,6 +189,27 @@ function setDefaultDateTime() {
     // colocar el servicio de correo electrónico
     console.log(`Enviando correo a ${task.email} sobre la tarea completada: ${task.title}`);
   }
+
+  // Encriptar el correo electrónico
+function encryptEmail(email) {
+  const secretKey = 'R@mH.259943**'; // Reemplaza esto con una clave segura
+  return CryptoJS.AES.encrypt(email, secretKey).toString();
+}
+
+// Desencriptar el correo electrónico
+function decryptEmail(encryptedEmail) {
+  const secretKey = 'R@mH.259943**'; // Reemplaza esto con la misma clave
+  const bytes = CryptoJS.AES.decrypt(encryptedEmail, secretKey);
+  return bytes.toString(CryptoJS.enc.Utf8);
+}
+
+// Ejemplo de uso
+const email = 'example@example.com';
+const encryptedEmail = encryptEmail(email);
+console.log('Encrypted Email:', encryptedEmail);
+const decryptedEmail = decryptEmail(encryptedEmail);
+console.log('Decrypted Email:', decryptedEmail);
+
 
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
