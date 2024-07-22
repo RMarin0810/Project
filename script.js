@@ -210,7 +210,10 @@ console.log('Encrypted Email:', encryptedEmail);
 const decryptedEmail = decryptEmail(encryptedEmail);
 console.log('Decrypted Email:', decryptedEmail);
 
-
+ const encryptedEmail = encryptEmail(email); // Encriptar el correo
+  const newTask = { section, title, details, dateTime, email: encryptedEmail, deadline, personInCharge, status: 'Pendiente' };
+  tasks.push(newTask);
+  
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 const firebaseConfig = {
