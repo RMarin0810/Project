@@ -191,6 +191,25 @@ function setDefaultDateTime() {
     console.log(`Enviando correo a ${task.email} sobre la tarea completada: ${task.title}`);
   }
 
+
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+const firebaseConfig = {
+  apiKey: "AIzaSyDb7448QL73qBrC_YdNiXMGYD0QZH-i7-c",
+  authDomain: "taskmaster-f650b.firebaseapp.com",
+  projectId: "taskmaster-f650b",
+  storageBucket: "taskmaster-f650b.appspot.com",
+  messagingSenderId: "196468952105",
+  appId: "1:196468952105:web:c71cb539331e3e8f882038",
+  measurementId: "G-LH8HFCBJ75"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+
+
+  
   // Renderizamos las tareas y el historial al cargar la página
   renderTasks();
   renderHistory();
