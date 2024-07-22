@@ -26,7 +26,6 @@ function setDefaultDateTime() {
   document.getElementById('deadline').value = localDateTime;
 }
 
-
   function clearFields() {
     document.getElementById('title').value = '';
     document.getElementById('details').value = '';
@@ -191,7 +190,6 @@ function setDefaultDateTime() {
     console.log(`Enviando correo a ${task.email} sobre la tarea completada: ${task.title}`);
   }
 
-
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 const firebaseConfig = {
@@ -240,7 +238,6 @@ async function getTasks() {
 addTask();
 getTasks();
 
-  
   
   // Renderizamos las tareas y el historial al cargar la página
   renderTasks();
