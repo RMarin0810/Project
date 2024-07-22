@@ -208,7 +208,39 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 
+// main.js
+import { app, analytics } from './firebaseConfig.js';
+import { getFirestore, collection, addDoc, getDocs } from "firebase/firestore"; 
 
+const db = getFirestore(app);
+
+// Example of adding data to Firestore
+async function addTask() {
+  try {
+    const docRef = await addDoc(collection(db, "tasks"), {
+      title: "My first task",
+      description: "This is a description of my first task.",
+      completed: false
+    });
+    console.log("Document written with ID: ", docRef.id);
+  } catch (error) {
+    console.error("Error adding document: ", error);
+  }
+}
+
+// Example of reading data from Firestore
+async function getTasks() {
+  const querySnapshot = await getDocs(collection(db, "tasks"));
+  querySnapshot.forEach((doc) => {
+    console.log(`${doc.id} => ${doc.data()}`);
+  });
+}
+
+// Call functions to test
+addTask();
+getTasks();
+
+  
   
   // Renderizamos las tareas y el historial al cargar la página
   renderTasks();
