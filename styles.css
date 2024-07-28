@@ -1,43 +1,90 @@
 body {
   font-family: Arial, sans-serif;
-  background-image: url('fondoP.jpg');
+  background: url('path/to/your/background-image.jpg') no-repeat center center fixed;
   background-size: cover;
   color: #333;
 }
 
 .container {
-  max-width: 800px;
-  margin: 0 auto;
+  background-color: rgba(255, 255, 255, 0.9);
   padding: 20px;
-  background-color: rgba(255, 255, 255, 0.8);
-  border-radius: 8px;
+  margin: 0 auto;
+  max-width: 800px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-h1, h2 {
+h1 {
   text-align: center;
-  color: #004aad;
-}
-
-.form-section, .filter-section, .search-section {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
+  font-size: 2em;
   margin-bottom: 20px;
 }
 
-.form-section label, .form-section input, .form-section select, 
-.filter-section label, .filter-section select, 
-.search-section input, .search-section button {
-  flex: 1 1 30%;
-  padding: 5px;
+.form-group, .form-buttons, .filter-group, .search-group {
+  margin-bottom: 15px;
 }
 
-.button-group {
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.form-group input, .form-group textarea, .form-group select {
+  width: calc(100% - 20px);
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1em;
+}
+
+.form-buttons button {
+  padding: 10px 15px;
+  margin-right: 10px;
+  border: none;
+  background-color: #007BFF;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+}
+
+.form-buttons button:hover {
+  background-color: #0056b3;
+}
+
+.filter-group select {
+  padding: 10px;
+  font-size: 1em;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.search-group {
   display: flex;
-  justify-content: center;
   gap: 10px;
-  margin-bottom: 20px;
+}
+
+.search-group input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1em;
+}
+
+.search-group button {
+  padding: 10px;
+  border: none;
+  background-color: #28a745;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+}
+
+.search-group button:hover {
+  background-color: #218838;
 }
 
 table {
@@ -46,41 +93,21 @@ table {
   margin-bottom: 20px;
 }
 
-th, td {
+table th, table td {
+  padding: 10px;
   border: 1px solid #ddd;
-  padding: 8px;
-  text-align: center;
+  text-align: left;
 }
 
-th {
-  background-color: #004aad;
-  color: white;
+table th {
+  background-color: #f2f2f2;
+  font-weight: bold;
 }
 
-@media (max-width: 768px) {
-  .form-section label, .form-section input, .form-section select, 
-  .filter-section label, .filter-section select, 
-  .search-section input, .search-section button {
-    flex-basis: 100%;
-  }
-  
-  h1 {
-    font-size: 5vw;
-  }
-  
-  h2 {
-    font-size: 4vw;
-  }
+table tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
 
-  table {
-    font-size: 2vw;
-  }
-
-  th {
-    font-size: 2vw;
-  }
-
-  .button-group button {
-    font-size: 2vw;
-  }
+.required {
+  color: red;
 }
