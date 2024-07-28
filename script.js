@@ -229,9 +229,9 @@ const db = firebase.firestore();
   db.collection('tasks').get().then((querySnapshot) => {
     querySnapshot.forEach((doc) => {
       tasks.push({ ...doc.data(), id: doc.id });
-    });
+    };
     renderTasks();
-  });
+  };
 
   setDefaultDateTime();
-});
+};
