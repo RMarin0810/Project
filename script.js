@@ -234,5 +234,4 @@ const db = firebase.firestore();
   });
 
   setDefaultDateTime();
-});
 };
