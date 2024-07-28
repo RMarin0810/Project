@@ -3,279 +3,246 @@ import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc } 
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
 import CryptoJS from 'https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js';
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDb7448QL73qBrC_YdNiXMGYD0QZH-i7-c",
-  authDomain: "taskmaster-f650b.firebaseapp.com",
-  projectId: "taskmaster-f650b",
-  storageBucket: "taskmaster-f650b.appspot.com",
-  messagingSenderId: "196468952105",
-  appId: "1:196468952105:web:c71cb539331e3e8f882038",
-  measurementId: "G-LH8HFCBJ75"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
-
-signInAnonymously(auth)
-  .then(() => {
-    console.log("Sesión anónima iniciada");
-  })
-  .catch((error) => {
-    console.error("Error al iniciar sesión anónima:", error);
-  });
-
-const titleInput = document.getElementById('title');
-const detailsInput = document.getElementById('details');
-const dateTimeInput = document.getElementById('date-time');
-const personInChargeInput = document.getElementById('person-in-charge');
-const emailInput = document.getElementById('email');
-const deadlineInput = document.getElementById('deadline');
-const sectionSelect = document.getElementById('section');
-const tasksTable = document.getElementById('tasks-table').getElementsByTagName('tbody')[0];
-const filterSectionSelect = document.getElementById('filter-section');
-const searchInput = document.getElementById('search');
-const historyTable = document.getElementById('history-table').getElementsByTagName('tbody')[0];
-
-let selectedTaskId = null;
-
-function encryptEmail(email) {
-  return CryptoJS.AES.encrypt(email, 'secret-key').toString();
-}
-
-function decryptEmail(ciphertext) {
-  const bytes = CryptoJS.AES.decrypt(ciphertext, 'secret-key');
-  return bytes.toString(CryptoJS.enc.Utf8);
-}
-
-function partiallyHideEmail(email) {
-  const [name, domain] = email.split('@');
-  const hiddenPart = '*'.repeat(domain.length - 2);
-  return `${name[0]}${hiddenPart}@${domain}`;
-}
-
-document.getElementById('add-task').addEventListener('click', async () => {
-  const task = {
-    title: titleInput.value,
-    details: detailsInput.value,
-    dateTime: dateTimeInput.value,
-    personInCharge: personInChargeInput.value,
-    email: encryptEmail(emailInput.value),
-    deadline: deadlineInput.value,
-    section: sectionSelect.value,
-    completed: false,
+document.addEventListener('DOMContentLoaded', function() {
+  // Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyDb7448QL73qBrC_YdNiXMGYD0QZH-i7-c",
+    authDomain: "taskmaster-f650b.firebaseapp.com",
+    projectId: "taskmaster-f650b",
+    storageBucket: "taskmaster-f650b.appspot.com",
+    messagingSenderId: "196468952105",
+    appId: "1:196468952105:web:c71cb539331e3e8f882038",
+    measurementId: "G-LH8HFCBJ75"
   };
 
-  try {
-    await addDoc(collection(db, 'tasks'), task);
-    loadTasks();
-  } catch (error) {
-    console.error("Error adding document: ", error);
-  }
-});
+  // Initialize Firebase
+  const app = firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-document.getElementById('edit-task').addEventListener('click', async () => {
-  if (!selectedTaskId) return;
+  const taskTable = document.getElementById('tasks-table').querySelector('tbody');
+  const historyTable = document.getElementById('history-table').querySelector('tbody');
 
-  const taskRef = doc(db, 'tasks', selectedTaskId);
+  document.getElementById('add-task').addEventListener('click', addTask);
+  document.getElementById('edit-task').addEventListener('click', editTask);
+  document.getElementById('delete-task').addEventListener('click', deleteTask);
+  document.getElementById('search-button').addEventListener('click', searchHistory);
+  document.getElementById('clear-history').addEventListener('click', clearHistory);
+  document.getElementById('filter-section').addEventListener('change', filterTasks);
 
-  const updatedTask = {
-    title: titleInput.value,
-    details: detailsInput.value,
-    dateTime: dateTimeInput.value,
-    personInCharge: personInChargeInput.value,
-    email: encryptEmail(emailInput.value),
-    deadline: deadlineInput.value,
-    section: sectionSelect.value,
-  };
+  window.addEventListener('beforeunload', saveData);
 
-  try {
-    await updateDoc(taskRef, updatedTask);
-    loadTasks();
-  } catch (error) {
-    console.error("Error updating document: ", error);
-  }
-
-  selectedTaskId = null;
-});
-
-document.getElementById('delete-task').addEventListener('click', async () => {
-  if (!selectedTaskId) return;
-
-  try {
-    await deleteDoc(doc(db, 'tasks', selectedTaskId));
-    loadTasks();
-  } catch (error) {
-    console.error("Error removing document: ", error);
+  function setDefaultDateTime() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const localDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+    
+    document.getElementById('date-time').value = localDateTime;
+    document.getElementById('deadline').value = localDateTime;
   }
 
-  selectedTaskId = null;
-});
+  function clearFields() {
+    document.getElementById('title').value = '';
+    document.getElementById('details').value = '';
+    document.getElementById('date-time').value = '';
+    document.getElementById('person-in-charge').value = '';
+    document.getElementById('email').value = '';
+    document.getElementById('deadline').value = '';
+    document.getElementById('section').value = 'Agenda ISJUP';
+    setDefaultDateTime();
+  }
 
-async function loadTasks() {
-  tasksTable.innerHTML = '';
+  function addTask() {
+    const title = document.getElementById('title').value.trim();
+    const details = document.getElementById('details').value.trim();
+    const dateTime = document.getElementById('date-time').value;
+    const section = document.getElementById('section').value;
+    const email = document.getElementById('email').value.trim();
+    const deadline = document.getElementById('deadline').value;
+    const personInCharge = document.getElementById('person-in-charge').value.trim();
 
-  const querySnapshot = await getDocs(collection(db, 'tasks'));
-
-  querySnapshot.forEach((doc) => {
-    const task = doc.data();
-    const row = tasksTable.insertRow();
-    row.insertCell(0).innerText = task.section;
-    row.insertCell(1).innerText = task.title;
-    row.insertCell(2).innerText = task.dateTime;
-    row.insertCell(3).innerText = task.completed ? 'Completada' : 'Pendiente';
-    row.insertCell(4).innerText = task.details;
-    row.insertCell(5).innerText = partiallyHideEmail(decryptEmail(task.email));
-    row.insertCell(6).innerText = task.deadline;
-    row.insertCell(7).innerText = task.personInCharge;
-
-    const completeButton = document.createElement('button');
-    completeButton.innerText = 'Completar';
-    completeButton.addEventListener('click', async () => {
-      await updateDoc(doc(db, 'tasks', doc.id), { completed: true });
-      loadTasks();
-      loadHistory();
-    });
-
-    const editButton = document.createElement('button');
-    editButton.innerText = 'Editar';
-    editButton.addEventListener('click', () => {
-      selectedTaskId = doc.id;
-      titleInput.value = task.title;
-      detailsInput.value = task.details;
-      dateTimeInput.value = task.dateTime;
-      personInChargeInput.value = task.personInCharge;
-      emailInput.value = decryptEmail(task.email);
-      deadlineInput.value = task.deadline;
-      sectionSelect.value = task.section;
-    });
-
-    row.insertCell(8).appendChild(completeButton);
-    row.insertCell(9).appendChild(editButton);
-  });
-}
-
-async function loadHistory() {
-  historyTable.innerHTML = '';
-
-  const querySnapshot = await getDocs(collection(db, 'tasks'));
-
-  querySnapshot.forEach((doc) => {
-    const task = doc.data();
-    if (task.completed) {
-      const row = historyTable.insertRow();
-      row.insertCell(0).innerText = task.section;
-      row.insertCell(1).innerText = task.title;
-      row.insertCell(2).innerText = task.dateTime;
-      row.insertCell(3).innerText = 'Completada';
-      row.insertCell(4).innerText = task.details;
-      row.insertCell(5).innerText = partiallyHideEmail(decryptEmail(task.email));
-      row.insertCell(6).innerText = task.deadline;
-      row.insertCell(7).innerText = task.personInCharge;
+    if (title === '' || details === '' || dateTime === '' || section === '' || deadline === '') {
+      alert('Por favor, complete todos los campos obligatorios.');
+      return;
     }
-  });
-}
 
-document.getElementById('filter-section').addEventListener('change', async () => {
-  const section = filterSectionSelect.value;
+    const encryptedEmail = email ? encryptEmail(email) : ''; // Encriptar el correo si está presente
+    const newTask = { section, title, details, dateTime, email: encryptedEmail, deadline, personInCharge, status: 'Pendiente' };
 
-  tasksTable.innerHTML = '';
-
-  const querySnapshot = await getDocs(collection(db, 'tasks'));
-
-  querySnapshot.forEach((doc) => {
-    const task = doc.data();
-    if (!section || task.section === section) {
-      const row = tasksTable.insertRow();
-      row.insertCell(0).innerText = task.section;
-      row.insertCell(1).innerText = task.title;
-      row.insertCell(2).innerText = task.dateTime;
-      row.insertCell(3).innerText = task.completed ? 'Completada' : 'Pendiente';
-      row.insertCell(4).innerText = task.details;
-      row.insertCell(5).innerText = partiallyHideEmail(decryptEmail(task.email));
-      row.insertCell(6).innerText = task.deadline;
-      row.insertCell(7).innerText = task.personInCharge;
-
-      const completeButton = document.createElement('button');
-      completeButton.innerText = 'Completar';
-      completeButton.addEventListener('click', async () => {
-        await updateDoc(doc(db, 'tasks', doc.id), { completed: true });
-        loadTasks();
-        loadHistory();
+    db.collection('tasks').add(newTask)
+      .then(() => {
+        tasks.push(newTask);
+        renderTasks();
+        clearFields();
+        if (email) {
+          sendEmailNotification(email, newTask); // Enviar correo si se proporciona
+        }
+      })
+      .catch(error => {
+        console.error("Error adding task: ", error);
       });
+  }
 
-      const editButton = document.createElement('button');
-      editButton.innerText = 'Editar';
-      editButton.addEventListener('click', () => {
-        selectedTaskId = doc.id;
-        titleInput.value = task.title;
-        detailsInput.value = task.details;
-        dateTimeInput.value = task.dateTime;
-        personInChargeInput.value = task.personInCharge;
-        emailInput.value = decryptEmail(task.email);
-        deadlineInput.value = task.deadline;
-        sectionSelect.value = task.section;
-      });
-
-      row.insertCell(8).appendChild(completeButton);
-      row.insertCell(9).appendChild(editButton);
+  function editTask() {
+    const selectedTasks = document.querySelectorAll('tr.selected');
+    if (selectedTasks.length !== 1) {
+      alert('Por favor, seleccione una única tarea para editar.');
+      return;
     }
-  });
-});
 
-document.getElementById('search-button').addEventListener('click', async () => {
-  const searchTerm = searchInput.value.toLowerCase();
+    const taskIndex = selectedTasks[0].getAttribute('data-index');
+    const task = tasks[taskIndex];
 
-  historyTable.innerHTML = '';
+    document.getElementById('section').value = task.section;
+    document.getElementById('title').value = task.title;
+    document.getElementById('details').value = task.details;
+    document.getElementById('date-time').value = task.dateTime;
+    document.getElementById('email').value = decryptEmail(task.email);
+    document.getElementById('deadline').value = task.deadline;
+    document.getElementById('person-in-charge').value = task.personInCharge;
 
-  const querySnapshot = await getDocs(collection(db, 'tasks'));
+    tasks.splice(taskIndex, 1);
+    renderTasks();
+  }
 
-  querySnapshot.forEach((doc) => {
-    const task = doc.data();
-    if (task.completed) {
-      const taskDetails = `${task.section} ${task.title} ${task.details} ${decryptEmail(task.email)} ${task.personInCharge}`.toLowerCase();
-      if (taskDetails.includes(searchTerm)) {
-        const row = historyTable.insertRow();
-        row.insertCell(0).innerText = task.section;
-        row.insertCell(1).innerText = task.title;
-        row.insertCell(2).innerText = task.dateTime;
-        row.insertCell(3).innerText = 'Completada';
-        row.insertCell(4).innerText = task.details;
-        row.insertCell(5).innerText = partiallyHideEmail(decryptEmail(task.email));
-        row.insertCell(6).innerText = task.deadline;
-        row.insertCell(7).innerText = task.personInCharge;
-      }
+  function deleteTask() {
+    const selectedTasks = document.querySelectorAll('tr.selected');
+    if (selectedTasks.length === 0) {
+      alert('Por favor, seleccione una o más tareas para eliminar.');
+      return;
     }
-  });
-});
 
-document.getElementById('clear-history').addEventListener('click', async () => {
-  historyTable.innerHTML = '';
+    selectedTasks.forEach(taskRow => {
+      const taskIndex = taskRow.getAttribute('data-index');
+      const task = tasks[taskIndex];
+      db.collection('tasks').doc(task.id).delete()
+        .then(() => {
+          tasks.splice(taskIndex, 1);
+          renderTasks();
+        })
+        .catch(error => {
+          console.error("Error removing task: ", error);
+        });
+    });
+  }
 
-  const querySnapshot = await getDocs(collection(db, 'tasks'));
-
-  querySnapshot.forEach(async (doc) => {
-    const task = doc.data();
-    if (task.completed) {
-      await deleteDoc(doc(db, 'tasks', doc.id));
+  function searchHistory() {
+    const searchQuery = document.getElementById('search').value.trim().toLowerCase();
+    if (searchQuery === '') {
+      renderHistory();
+      return;
     }
+
+    const filteredHistory = history.filter(task =>
+      task.title.toLowerCase().includes(searchQuery) ||
+      task.details.toLowerCase().includes(searchQuery) ||
+      task.section.toLowerCase().includes(searchQuery)
+    );
+    renderHistory(filteredHistory);
+  }
+
+  function clearHistory() {
+    if (confirm('¿Está seguro de que desea borrar todo el historial?')) {
+      history = [];
+      renderHistory();
+    }
+  }
+
+  function filterTasks() {
+    const filterValue = document.getElementById('filter-section').value;
+    if (filterValue === 'Todo') {
+      renderTasks();
+    } else {
+      const filteredTasks = tasks.filter(task => task.section === filterValue);
+      renderTasks(filteredTasks);
+    }
+  }
+
+  function saveData() {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+    localStorage.setItem('history', JSON.stringify(history));
+  }
+
+  function renderTasks(filteredTasks = tasks) {
+    taskTable.innerHTML = '';
+    filteredTasks.forEach((task, index) => {
+      const row = document.createElement('tr');
+      row.setAttribute('data-index', index);
+      row.innerHTML = `
+        <td>${task.section}</td>
+        <td>${task.title}</td>
+        <td>${task.details}</td>
+        <td>${task.dateTime}</td>
+        <td>${task.email ? showPartialEmail(task.email) : ''}</td>
+        <td>${task.deadline}</td>
+        <td>${task.personInCharge}</td>
+        <td>${task.status}</td>
+        <td><input type="checkbox" onclick="toggleTaskStatus(${index})"></td>
+        <td><input type="radio" name="select-task" onclick="selectTask(${index})"></td>
+      `;
+      taskTable.appendChild(row);
+    });
+  }
+
+  function renderHistory(filteredHistory = history) {
+    historyTable.innerHTML = '';
+    filteredHistory.forEach((task, index) => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${task.section}</td>
+        <td>${task.title}</td>
+        <td>${task.details}</td>
+        <td>${task.dateTime}</td>
+        <td>${task.email ? showPartialEmail(task.email) : ''}</td>
+        <td>${task.deadline}</td>
+        <td>${task.personInCharge}</td>
+        <td>${task.status}</td>
+      `;
+      historyTable.appendChild(row);
+    });
+  }
+
+  function encryptEmail(email) {
+    return CryptoJS.AES.encrypt(email, 'secret key 123').toString();
+  }
+
+  function decryptEmail(encryptedEmail) {
+    const bytes = CryptoJS.AES.decrypt(encryptedEmail, 'secret key 123');
+    return bytes.toString(CryptoJS.enc.Utf8);
+  }
+
+  function showPartialEmail(encryptedEmail) {
+    const email = decryptEmail(encryptedEmail);
+    const atIndex = email.indexOf('@');
+    return email.slice(0, atIndex) + '*****';
+  }
+
+  function sendEmailNotification(email, task) {
+    // Aquí debes implementar el envío de correo electrónico con tu servicio de correo preferido.
+    // Ejemplo utilizando EmailJS:
+    // emailjs.send("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", {
+    //   to_email: email,
+    //   title: task.title,
+    //  
+
+ details: task.details,
+    //   start_date: task.dateTime,
+    //   deadline: task.deadline
+    // });
+  }
+
+  let tasks = [];
+  let history = [];
+
+  db.collection('tasks').get().then((querySnapshot) => {
+    querySnapshot.forEach((doc) => {
+      tasks.push({ ...doc.data(), id: doc.id });
+    });
+    renderTasks();
   });
 
-  loadHistory();
+  setDefaultDateTime();
 });
-
-tasksTable.addEventListener('click', (event) => {
-  const row = event.target.closest('tr');
-  selectedTaskId = row.getAttribute('data-id');
-  titleInput.value = row.cells[1].innerText;
-  detailsInput.value = row.cells[4].innerText;
-  dateTimeInput.value = row.cells[2].innerText;
-  personInChargeInput.value = row.cells[7].innerText;
-  emailInput.value = row.cells[5].innerText.replace('***', '');
-  deadlineInput.value = row.cells[6].innerText;
-  sectionSelect.value = row.cells[0].innerText;
-});
-
-// Cargar tareas iniciales
-loadTasks();
-loadHistory();
