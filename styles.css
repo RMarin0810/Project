@@ -6,7 +6,7 @@ body {
   background-attachment: fixed;
   margin: 0;
   padding: 0;
-  font-size: 2.5vw; /* Ajuste del tamaño de fuente basado en el ancho de la ventana */
+  font-size: 1vw; /* Ajuste del tamaño de fuente basado en el ancho de la ventana */
 }
 
 .container {
@@ -21,7 +21,7 @@ body {
 
 h1 {
   text-align: center;
-  font-size: 3vw; /* Ajuste del tamaño de fuente basado en el ancho de la ventana */
+  font-size: 1vw; /* Ajuste del tamaño de fuente basado en el ancho de la ventana */
 }
 
 .form-section, .filter-section {
@@ -76,7 +76,7 @@ table {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
-  font-size: 2.5vw; /* Ajuste del tamaño de fuente basado en el ancho de la ventana */
+  font-size: 1vw; /* Ajuste del tamaño de fuente basado en el ancho de la ventana */
 }
 
 th, td {
@@ -102,7 +102,7 @@ tr:nth-child(even) {
   }
 
   h1 {
-    font-size: 2vw; /* Ajuste del tamaño de fuente basado en el ancho de la ventana */
+    font-size: 1.0vw; /* Ajuste del tamaño de fuente basado en el ancho de la ventana */
   }
 
   .form-section label, .filter-section label {
