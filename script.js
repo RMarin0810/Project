@@ -220,8 +220,8 @@ const db = firebase.firestore();
  //details: task.details,
     //   start_date: task.dateTime,
     //   deadline: task.deadline
-    // });
- // }
+    /* });*/
+/* }*/
 
   let tasks = [];
   let history = [];
