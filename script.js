@@ -4,12 +4,12 @@ import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/9
 import CryptoJS from 'https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js';
 
 const firebaseConfig = {
-  apiKey: "TU_API_KEY",
-  authDomain: "TU_AUTH_DOMAIN",
-  projectId: "TU_PROJECT_ID",
-  storageBucket: "TU_STORAGE_BUCKET",
-  messagingSenderId: "TU_MESSAGING_SENDER_ID",
-  appId: "TU_APP_ID",
+  apiKey: "AIzaSyDb7448QL73qBrC_YdNiXMGYD0QZH-i7-c",
+  authDomain: "taskmaster-f650b.firebaseapp.com",
+  projectId: "taskmaster-f650b",
+  storageBucket: "taskmaster-f650b.appspot.com",
+  messagingSenderId: "196468952105",
+  appId: "1:196468952105:web:c71cb539331e3e8f882038",
 };
 
 const app = initializeApp(firebaseConfig);
