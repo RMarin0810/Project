@@ -3,32 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gestor de Tareas</title>
+  <title>Gestión de Tareas</title>
   <link rel="stylesheet" href="styles.css">
-  
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-  
 </head>
 <body>
   <div class="container">
-    <h1>Gestor de Tareas</h1>
+    <h1>Gestión de Tareas</h1>
     <div class="form-section">
       <label for="title">Título:</label>
-      <input type="text" id="title" placeholder="Título">
+      <input type="text" id="title">
       <label for="details">Detalles:</label>
-      <input type="text" id="details" placeholder="Detalles">
+      <input type="text" id="details">
       <label for="date-time">Fecha y Hora:</label>
       <input type="datetime-local" id="date-time">
       <label for="person-in-charge">Persona Encargada:</label>
-      <input type="text" id="person-in-charge" placeholder="Persona Encargada">
-      <label for="email">Correo Electrónico:</label>
-      <input type="email" id="email" placeholder="Correo Electrónico">
-      <label for="deadline">Fecha de Plazo de Entrega:</label>
-      <input type="datetime-local" id="deadline">
+      <input type="text" id="person-in-charge">
+      <label for="email">Correo:</label>
+      <input type="email" id="email">
+      <label for="deadline">Fecha Límite:</label>
+      <input type="date" id="deadline">
       <label for="section">Sección:</label>
       <select id="section">
         <option value="Agenda ISJUP">Agenda ISJUP</option>
@@ -42,16 +35,17 @@
         <option value="Tareas">Tareas</option>
         <option value="Reuniones">Reuniones</option>
       </select>
-      <div class="button-group">
-        <button id="add-task">Agregar</button>
-        <button id="edit-task">Editar</button>
-        <button id="delete-task">Eliminar</button>
-      </div>
     </div>
+    <div class="button-group">
+      <button id="add-task">Agregar Tarea</button>
+      <button id="edit-task">Editar Tarea</button>
+      <button id="delete-task">Eliminar Tarea</button>
+    </div>
+    <h2>Tareas</h2>
     <div class="filter-section">
-      <label for="filter-section">Filtrar:</label>
+      <label for="filter-section">Filtrar por Sección:</label>
       <select id="filter-section">
-        <option value="Todo">Todo</option>
+        <option value="">Todas</option>
         <option value="Agenda ISJUP">Agenda ISJUP</option>
         <option value="Correo">Correo</option>
         <option value="Evaluación de Desempeño">Evaluación de Desempeño</option>
@@ -64,51 +58,48 @@
         <option value="Reuniones">Reuniones</option>
       </select>
     </div>
-    <div class="tasks-section scrollable">
-      <table id="tasks-table">
-        <thead>
-          <tr>
-            <th>Sección</th>
-            <th>Título</th>
-            <th>Fecha y Hora</th>
-            <th>Estado</th>
-            <th>Detalles</th>
-            <th>Correo</th>
-            <th>Plazo</th>
-            <th>Encargado</th>
-            <th>Completar</th>
-            <th>Seleccionar</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
-  <div class="container">
-    <h1>Historial de Tareas</h1>
-    <div class="form-section">
-      <input type="text" id="search" placeholder="Buscar">
+    <table id="tasks-table">
+      <thead>
+        <tr>
+          <th>Sección</th>
+          <th>Título</th>
+          <th>Fecha y Hora</th>
+          <th>Estado</th>
+          <th>Detalles</th>
+          <th>Correo</th>
+          <th>Fecha Límite</th>
+          <th>Persona Encargada</th>
+          <th>Completada</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+    <h2>Historial</h2>
+    <div class="search-section">
+      <input type="text" id="search" placeholder="Buscar en historial">
       <button id="search-button">Buscar</button>
-      <button id="clear-history">Limpiar</button>
+      <button id="clear-history">Limpiar Historial</button>
     </div>
-    <div class="history-section scrollable">
-      <table id="history-table">
-        <thead>
-          <tr>
-            <th>Sección</th>
-            <th>Título</th>
-            <th>Fecha y Hora</th>
-            <th>Estado</th>
-            <th>Detalles</th>
-            <th>Correo</th>
-            <th>Plazo</th>
-            <th>Encargado</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
+    <table id="history-table">
+      <thead>
+        <tr>
+          <th>Sección</th>
+          <th>Título</th>
+          <th>Fecha y Hora</th>
+          <th>Estado</th>
+          <th>Detalles</th>
+          <th>Correo</th>
+          <th>Fecha Límite</th>
+          <th>Persona Encargada</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
   </div>
-  <script type="module" src="/script.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>
