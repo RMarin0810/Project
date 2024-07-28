@@ -1,26 +1,21 @@
-// Importar las funciones de Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
 import CryptoJS from 'https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js';
 
-// Tu configuración de Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyDb7448QL73qBrC_YdNiXMGYD0QZH-i7-c",
-  authDomain: "taskmaster-f650b.firebaseapp.com",
-  projectId: "taskmaster-f650b",
-  storageBucket: "taskmaster-f650b.appspot.com",
-  messagingSenderId: "196468952105",
-  appId: "1:196468952105:web:e869e38c2690930d882038",
-  measurementId: "G-ZYPBHX76JB"
+  apiKey: "TU_API_KEY",
+  authDomain: "TU_AUTH_DOMAIN",
+  projectId: "TU_PROJECT_ID",
+  storageBucket: "TU_STORAGE_BUCKET",
+  messagingSenderId: "TU_MESSAGING_SENDER_ID",
+  appId: "TU_APP_ID",
 };
 
-// Inicializar Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// Iniciar sesión anónima
 signInAnonymously(auth)
   .then(() => {
     console.log("Sesión anónima iniciada");
@@ -29,7 +24,6 @@ signInAnonymously(auth)
     console.error("Error al iniciar sesión anónima:", error);
   });
 
-// Referencias a elementos del DOM
 const titleInput = document.getElementById('title');
 const detailsInput = document.getElementById('details');
 const dateTimeInput = document.getElementById('date-time');
@@ -44,94 +38,21 @@ const historyTable = document.getElementById('history-table').getElementsByTagNa
 
 let selectedTaskId = null;
 
-// Encriptar correo
 function encryptEmail(email) {
   return CryptoJS.AES.encrypt(email, 'secret-key').toString();
 }
 
-// Desencriptar correo
 function decryptEmail(ciphertext) {
   const bytes = CryptoJS.AES.decrypt(ciphertext, 'secret-key');
   return bytes.toString(CryptoJS.enc.Utf8);
 }
 
-// Mostrar correo parcialmente
 function partiallyHideEmail(email) {
   const [name, domain] = email.split('@');
-  const hiddenName = name.slice(0, 3) + '***';
-  return hiddenName + '@' + domain;
+  const hiddenPart = '*'.repeat(domain.length - 2);
+  return `${name[0]}${hiddenPart}@${domain}`;
 }
 
-// Añadir tarea a Firestore
-async function addTask(task) {
-  try {
-    const docRef = await addDoc(collection(db, "tasks"), task);
-    console.log("Documento escrito con ID: ", docRef.id);
-  } catch (e) {
-    console.error("Error al añadir el documento: ", e);
-  }
-}
-
-// Editar tarea en Firestore
-async function editTask(id, updatedTask) {
-  try {
-    const taskRef = doc(db, "tasks", id);
-    await updateDoc(taskRef, updatedTask);
-    console.log("Documento actualizado con ID: ", id);
-  } catch (e) {
-    console.error("Error al actualizar el documento: ", e);
-  }
-}
-
-// Eliminar tarea de Firestore
-async function deleteTask(id) {
-  try {
-    await deleteDoc(doc(db, "tasks", id));
-    console.log("Documento eliminado con ID: ", id);
-  } catch (e) {
-    console.error("Error al eliminar el documento: ", e);
-  }
-}
-
-// Cargar tareas desde Firestore
-async function loadTasks() {
-  tasksTable.innerHTML = "";
-  const querySnapshot = await getDocs(collection(db, "tasks"));
-  querySnapshot.forEach((doc) => {
-    const task = doc.data();
-    const row = tasksTable.insertRow();
-    row.insertCell(0).innerText = task.section;
-    row.insertCell(1).innerText = task.title;
-    row.insertCell(2).innerText = task.dateTime;
-    row.insertCell(3).innerText = task.state;
-    row.insertCell(4).innerText = task.details;
-    row.insertCell(5).innerText = partiallyHideEmail(decryptEmail(task.email));
-    row.insertCell(6).innerText = task.deadline;
-    row.insertCell(7).innerText = task.personInCharge;
-    row.insertCell(8).innerHTML = `<input type="checkbox" ${task.completed ? "checked" : ""} onclick="updateTaskStatus('${doc.id}', this.checked)">`;
-    row.insertCell(9).innerHTML = `<button onclick="selectTask('${doc.id}')">Seleccionar</button>`;
-  });
-}
-
-// Cargar historial de tareas desde Firestore
-async function loadHistory() {
-  historyTable.innerHTML = "";
-  const querySnapshot = await getDocs(collection(db, "history"));
-  querySnapshot.forEach((doc) => {
-    const task = doc.data();
-    const row = historyTable.insertRow();
-    row.insertCell(0).innerText = task.section;
-    row.insertCell(1).innerText = task.title;
-    row.insertCell(2).innerText = task.dateTime;
-    row.insertCell(3).innerText = task.state;
-    row.insertCell(4).innerText = task.details;
-    row.insertCell(5).innerText = partiallyHideEmail(decryptEmail(task.email));
-    row.insertCell(6).innerText = task.deadline;
-    row.insertCell(7).innerText = task.personInCharge;
-  });
-}
-
-// Añadir tarea
 document.getElementById('add-task').addEventListener('click', async () => {
   const task = {
     title: titleInput.value,
@@ -142,98 +63,217 @@ document.getElementById('add-task').addEventListener('click', async () => {
     deadline: deadlineInput.value,
     section: sectionSelect.value,
     completed: false,
-    state: "Pendiente",
   };
-  await addTask(task);
-  loadTasks();
+
+  try {
+    await addDoc(collection(db, 'tasks'), task);
+    loadTasks();
+  } catch (error) {
+    console.error("Error adding document: ", error);
+  }
 });
 
-// Editar tarea
 document.getElementById('edit-task').addEventListener('click', async () => {
-  if (selectedTaskId) {
-    const updatedTask = {
-      title: titleInput.value,
-      details: detailsInput.value,
-      dateTime: dateTimeInput.value,
-      personInCharge: personInChargeInput.value,
-      email: encryptEmail(emailInput.value),
-      deadline: deadlineInput.value,
-      section: sectionSelect.value,
-      state: "Pendiente",
-    };
-    await editTask(selectedTaskId, updatedTask);
+  if (!selectedTaskId) return;
+
+  const taskRef = doc(db, 'tasks', selectedTaskId);
+
+  const updatedTask = {
+    title: titleInput.value,
+    details: detailsInput.value,
+    dateTime: dateTimeInput.value,
+    personInCharge: personInChargeInput.value,
+    email: encryptEmail(emailInput.value),
+    deadline: deadlineInput.value,
+    section: sectionSelect.value,
+  };
+
+  try {
+    await updateDoc(taskRef, updatedTask);
     loadTasks();
-  } else {
-    alert("Por favor, selecciona una tarea para editar");
+  } catch (error) {
+    console.error("Error updating document: ", error);
   }
+
+  selectedTaskId = null;
 });
 
-// Eliminar tarea
 document.getElementById('delete-task').addEventListener('click', async () => {
-  if (selectedTaskId) {
-    await deleteTask(selectedTaskId);
+  if (!selectedTaskId) return;
+
+  try {
+    await deleteDoc(doc(db, 'tasks', selectedTaskId));
     loadTasks();
-  } else {
-    alert("Por favor, selecciona una tarea para eliminar");
+  } catch (error) {
+    console.error("Error removing document: ", error);
   }
+
+  selectedTaskId = null;
 });
 
-// Filtrar tareas
-filterSectionSelect.addEventListener('change', () => {
-  const filterValue = filterSectionSelect.value;
-  loadTasks(filterValue);
+async function loadTasks() {
+  tasksTable.innerHTML = '';
+
+  const querySnapshot = await getDocs(collection(db, 'tasks'));
+
+  querySnapshot.forEach((doc) => {
+    const task = doc.data();
+    const row = tasksTable.insertRow();
+    row.insertCell(0).innerText = task.section;
+    row.insertCell(1).innerText = task.title;
+    row.insertCell(2).innerText = task.dateTime;
+    row.insertCell(3).innerText = task.completed ? 'Completada' : 'Pendiente';
+    row.insertCell(4).innerText = task.details;
+    row.insertCell(5).innerText = partiallyHideEmail(decryptEmail(task.email));
+    row.insertCell(6).innerText = task.deadline;
+    row.insertCell(7).innerText = task.personInCharge;
+
+    const completeButton = document.createElement('button');
+    completeButton.innerText = 'Completar';
+    completeButton.addEventListener('click', async () => {
+      await updateDoc(doc(db, 'tasks', doc.id), { completed: true });
+      loadTasks();
+      loadHistory();
+    });
+
+    const editButton = document.createElement('button');
+    editButton.innerText = 'Editar';
+    editButton.addEventListener('click', () => {
+      selectedTaskId = doc.id;
+      titleInput.value = task.title;
+      detailsInput.value = task.details;
+      dateTimeInput.value = task.dateTime;
+      personInChargeInput.value = task.personInCharge;
+      emailInput.value = decryptEmail(task.email);
+      deadlineInput.value = task.deadline;
+      sectionSelect.value = task.section;
+    });
+
+    row.insertCell(8).appendChild(completeButton);
+    row.insertCell(9).appendChild(editButton);
+  });
+}
+
+async function loadHistory() {
+  historyTable.innerHTML = '';
+
+  const querySnapshot = await getDocs(collection(db, 'tasks'));
+
+  querySnapshot.forEach((doc) => {
+    const task = doc.data();
+    if (task.completed) {
+      const row = historyTable.insertRow();
+      row.insertCell(0).innerText = task.section;
+      row.insertCell(1).innerText = task.title;
+      row.insertCell(2).innerText = task.dateTime;
+      row.insertCell(3).innerText = 'Completada';
+      row.insertCell(4).innerText = task.details;
+      row.insertCell(5).innerText = partiallyHideEmail(decryptEmail(task.email));
+      row.insertCell(6).innerText = task.deadline;
+      row.insertCell(7).innerText = task.personInCharge;
+    }
+  });
+}
+
+document.getElementById('filter-section').addEventListener('change', async () => {
+  const section = filterSectionSelect.value;
+
+  tasksTable.innerHTML = '';
+
+  const querySnapshot = await getDocs(collection(db, 'tasks'));
+
+  querySnapshot.forEach((doc) => {
+    const task = doc.data();
+    if (!section || task.section === section) {
+      const row = tasksTable.insertRow();
+      row.insertCell(0).innerText = task.section;
+      row.insertCell(1).innerText = task.title;
+      row.insertCell(2).innerText = task.dateTime;
+      row.insertCell(3).innerText = task.completed ? 'Completada' : 'Pendiente';
+      row.insertCell(4).innerText = task.details;
+      row.insertCell(5).innerText = partiallyHideEmail(decryptEmail(task.email));
+      row.insertCell(6).innerText = task.deadline;
+      row.insertCell(7).innerText = task.personInCharge;
+
+      const completeButton = document.createElement('button');
+      completeButton.innerText = 'Completar';
+      completeButton.addEventListener('click', async () => {
+        await updateDoc(doc(db, 'tasks', doc.id), { completed: true });
+        loadTasks();
+        loadHistory();
+      });
+
+      const editButton = document.createElement('button');
+      editButton.innerText = 'Editar';
+      editButton.addEventListener('click', () => {
+        selectedTaskId = doc.id;
+        titleInput.value = task.title;
+        detailsInput.value = task.details;
+        dateTimeInput.value = task.dateTime;
+        personInChargeInput.value = task.personInCharge;
+        emailInput.value = decryptEmail(task.email);
+        deadlineInput.value = task.deadline;
+        sectionSelect.value = task.section;
+      });
+
+      row.insertCell(8).appendChild(completeButton);
+      row.insertCell(9).appendChild(editButton);
+    }
+  });
 });
 
-// Buscar en historial
-document.getElementById('search-button').addEventListener('click', () => {
-  const searchValue = searchInput.value.toLowerCase();
-  const rows = historyTable.getElementsByTagName('tr');
-  for (let row of rows) {
-    const cells = row.getElementsByTagName('td');
-    let match = false;
-    for (let cell of cells) {
-      if (cell.innerText.toLowerCase().includes(searchValue)) {
-        match = true;
-        break;
+document.getElementById('search-button').addEventListener('click', async () => {
+  const searchTerm = searchInput.value.toLowerCase();
+
+  historyTable.innerHTML = '';
+
+  const querySnapshot = await getDocs(collection(db, 'tasks'));
+
+  querySnapshot.forEach((doc) => {
+    const task = doc.data();
+    if (task.completed) {
+      const taskDetails = `${task.section} ${task.title} ${task.details} ${decryptEmail(task.email)} ${task.personInCharge}`.toLowerCase();
+      if (taskDetails.includes(searchTerm)) {
+        const row = historyTable.insertRow();
+        row.insertCell(0).innerText = task.section;
+        row.insertCell(1).innerText = task.title;
+        row.insertCell(2).innerText = task.dateTime;
+        row.insertCell(3).innerText = 'Completada';
+        row.insertCell(4).innerText = task.details;
+        row.insertCell(5).innerText = partiallyHideEmail(decryptEmail(task.email));
+        row.insertCell(6).innerText = task.deadline;
+        row.insertCell(7).innerText = task.personInCharge;
       }
     }
-    row.style.display = match ? '' : 'none';
-  }
+  });
 });
 
-// Limpiar historial
 document.getElementById('clear-history').addEventListener('click', async () => {
-  const querySnapshot = await getDocs(collection(db, "history"));
+  historyTable.innerHTML = '';
+
+  const querySnapshot = await getDocs(collection(db, 'tasks'));
+
   querySnapshot.forEach(async (doc) => {
-    await deleteDoc(doc(db, "history", doc.id));
+    const task = doc.data();
+    if (task.completed) {
+      await deleteDoc(doc(db, 'tasks', doc.id));
+    }
   });
+
   loadHistory();
 });
 
-// Actualizar estado de la tarea
-window.updateTaskStatus = async (id, completed) => {
-  const taskRef = doc(db, "tasks", id);
-  await updateDoc(taskRef, {
-    completed: completed,
-    state: completed ? "Completada" : "Pendiente",
-  });
-  loadTasks();
-};
-
-// Seleccionar tarea para editar o eliminar
-window.selectTask = (id) => {
-  selectedTaskId = id;
-  const row = tasksTable.querySelector(`button[onclick="selectTask('${id}')"]`).parentNode.parentNode;
+tasksTable.addEventListener('click', (event) => {
+  const row = event.target.closest('tr');
+  selectedTaskId = row.getAttribute('data-id');
   titleInput.value = row.cells[1].innerText;
   detailsInput.value = row.cells[4].innerText;
   dateTimeInput.value = row.cells[2].innerText;
-  personInChargeInput
-
-.value = row.cells[7].innerText;
+  personInChargeInput.value = row.cells[7].innerText;
   emailInput.value = row.cells[5].innerText.replace('***', '');
   deadlineInput.value = row.cells[6].innerText;
   sectionSelect.value = row.cells[0].innerText;
-};
+});
 
 // Cargar tareas iniciales
 loadTasks();
