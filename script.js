@@ -1,4 +1,4 @@
-import { initializeApp } from "firebase/script.js";
+import { initializeApp } from "firebase/script";
 import { getAnalytics } from "firebase/analytics";
 //import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
