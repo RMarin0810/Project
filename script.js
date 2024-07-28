@@ -11,8 +11,8 @@ const firebaseConfig = {
   projectId: "taskmaster-f650b",
   storageBucket: "taskmaster-f650b.appspot.com",
   messagingSenderId: "196468952105",
-  appId: "1:196468952105:web:c71cb539331e3e8f882038",
-  measurementId: "G-LH8HFCBJ75"
+  appId: "1:196468952105:web:e869e38c2690930d882038",
+  measurementId: "G-ZYPBHX76JB"
 };
 
 // Inicializar Firebase
