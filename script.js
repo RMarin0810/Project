@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
 
-    const encryptedEmail = encryptEmail(email); // Encriptar el correo
+    const encryptedEmail = encryptEmail(email);
     const newTask = { section, title, details, dateTime, email: encryptedEmail, deadline, personInCharge, status: 'Pendiente' };
     tasks.push(newTask);
     renderTasks();
@@ -135,43 +135,68 @@ document.addEventListener('DOMContentLoaded', function() {
     taskTable.innerHTML = '';
     filteredTasks.forEach((task, index) => {
       const row = document.createElement('tr');
+      row.setAttribute('data-index', index);
+      row.innerHTML = `
+        <td>${task.section}</td>
+        <td>${task.title}</td>
+        <td>${task.details}</td>
+        <td>${task.dateTime}</td>
+        <td>${task.email}</td>
+        <td>${task.deadline}</td>
+        <td>${task.personInCharge}</td>
+        <td>${task.status}</td>
+        <td><button class="complete-task">Completar</button></td>
+        <td><input type="checkbox" class="select-task"></td>
+      `;
+      taskTable.appendChild(row);
 
-                            row.setAttribute('data-index', index);
-  row.innerHTML = `
-    <td>${task.section}</td>
-    <td>${task.title}</td>
-    <td>${task.details}</td>
-    <td>${task.dateTime}</td>
-    <td>${task.email}</td>
-    <td>${task.deadline}</td>
-    <td>${task.personInCharge}</td>
-    <td>${task.status}</td>
-  `;
-  taskTable.appendChild(row);
-});
-
+      // Agregar evento para completar tarea
+      row.querySelector('.complete-task').addEventListener('click', () => completeTask(index));
+      // Agregar evento para seleccionar tarea
+      row.querySelector('.select-task').addEventListener('change', () => selectTask(index));
+    });
   }
 
-function renderHistory(filteredHistory = history) {
-historyTable.innerHTML = ‘’;
-filteredHistory.forEach((task, index) => {
-const row = document.createElement(‘tr’);
-row.innerHTML = <td>${task.section}</td> <td>${task.title}</td> <td>${task.details}</td> <td>${task.dateTime}</td> <td>${task.email}</td> <td>${task.deadline}</td> <td>${task.personInCharge}</td> <td>${task.status}</td>;
-historyTable.appendChild(row);
-});
-}
+  function renderHistory(filteredHistory = history) {
+    historyTable.innerHTML = '';
+    filteredHistory.forEach((task, index) => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${task.section}</td>
+        <td>${task.title}</td>
+        <td>${task.details}</td>
+        <td>${task.dateTime}</td>
+        <td>${task.email}</td>
+        <td>${task.deadline}</td>
+        <td>${task.personInCharge}</td>
+        <td>${task.status}</td>
+      `;
+      historyTable.appendChild(row);
+    });
+  }
 
-function encryptEmail(email) {
-const encodedEmail = btoa(email); // Ejemplo simple de encriptación
-return encodedEmail;
-}
+  function encryptEmail(email) {
+    return btoa(email); // Ejemplo simple de encriptación
+  }
 
-function decryptEmail(encryptedEmail) {
-const decodedEmail = atob(encryptedEmail); // Ejemplo simple de desencriptación
-return decodedEmail;
-}
+  function decryptEmail(encryptedEmail) {
+    return atob(encryptedEmail); // Ejemplo simple de desencriptación
+  }
 
-setDefaultDateTime();
-renderTasks();
-renderHistory();
+  function completeTask(index) {
+    tasks[index].status = 'Completada';
+    const completedTask = tasks.splice(index, 1)[0];
+    history.push(completedTask);
+    renderTasks();
+    renderHistory();
+  }
+
+  function selectTask(index) {
+    const rows = document.querySelectorAll('tbody tr');
+    rows[index].classList.toggle('selected');
+  }
+
+  setDefaultDateTime();
+  renderTasks();
+  renderHistory();
 });
