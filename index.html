@@ -5,13 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gestor de Tareas</title>
   <link rel="stylesheet" href="styles.css">
-  
-<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
 <body>
   <div class="container">
@@ -42,14 +36,13 @@
         <option value="Tareas">Tareas</option>
         <option value="Reuniones">Reuniones</option>
       </select>
-      <div class="button-group">
-        <button id="add-task">Agregar</button>
-        <button id="edit-task">Editar</button>
-        <button id="delete-task">Eliminar</button>
-      </div>
+      <button id="add-task">Agregar Tarea</button>
+      <button id="edit-task">Editar Tarea</button>
+      <button id="delete-task">Eliminar Tarea</button>
     </div>
-    <div class="filter-section">
-      <label for="filter-section">Filtrar:</label>
+    <div class="task-section">
+      <h2>Tareas</h2>
+      <label for="filter-section">Filtrar por sección:</label>
       <select id="filter-section">
         <option value="Todo">Todo</option>
         <option value="Agenda ISJUP">Agenda ISJUP</option>
@@ -63,19 +56,17 @@
         <option value="Tareas">Tareas</option>
         <option value="Reuniones">Reuniones</option>
       </select>
-    </div>
-    <div class="tasks-section scrollable">
       <table id="tasks-table">
         <thead>
           <tr>
             <th>Sección</th>
             <th>Título</th>
-            <th>Fecha y Hora</th>
-            <th>Estado</th>
             <th>Detalles</th>
-            <th>Correo</th>
-            <th>Plazo</th>
-            <th>Encargado</th>
+            <th>Fecha y Hora</th>
+            <th>Correo Electrónico</th>
+            <th>Fecha de Plazo de Entrega</th>
+            <th>Persona Encargada</th>
+            <th>Estado</th>
             <th>Completar</th>
             <th>Seleccionar</th>
           </tr>
@@ -83,32 +74,28 @@
         <tbody></tbody>
       </table>
     </div>
-  </div>
-  <div class="container">
-    <h1>Historial de Tareas</h1>
-    <div class="form-section">
-      <input type="text" id="search" placeholder="Buscar">
+    <div class="history-section">
+      <h2>Historial</h2>
+      <input type="text" id="search" placeholder="Buscar en el historial">
       <button id="search-button">Buscar</button>
-      <button id="clear-history">Limpiar</button>
-    </div>
-    <div class="history-section scrollable">
+      <button id="clear-history">Limpiar Historial</button>
       <table id="history-table">
         <thead>
           <tr>
             <th>Sección</th>
             <th>Título</th>
-            <th>Fecha y Hora</th>
-            <th>Estado</th>
             <th>Detalles</th>
-            <th>Correo</th>
-            <th>Plazo</th>
-            <th>Encargado</th>
+            <th>Fecha y Hora</th>
+            <th>Correo Electrónico</th>
+            <th>Fecha de Plazo de Entrega</th>
+            <th>Persona Encargada</th>
+            <th>Estado</th>
           </tr>
         </thead>
         <tbody></tbody>
       </table>
     </div>
   </div>
-  <script type="module" src="/script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
