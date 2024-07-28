@@ -1,25 +1,12 @@
-//import { initializeApp } from "firebase/script.js";
-//import { getAnalytics } from "firebase/analytics";
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
-import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
-import CryptoJS from 'https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js';
+// app.js
+import { firebaseConfig } from './config.js';
+import dotenv from 'dotenv';
 
-document.addEventListener('DOMContentLoaded', function() {
-  // Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyDb7448QL73qBrC_YdNiXMGYD0QZH-i7-c",
-    authDomain: "taskmaster-f650b.firebaseapp.com",
-    projectId: "taskmaster-f650b",
-    storageBucket: "taskmaster-f650b.appspot.com",
-    messagingSenderId: "196468952105",
-    appId: "1:196468952105:web:c71cb539331e3e8f882038",
-    measurementId: "G-LH8HFCBJ75"
-  };
+dotenv.config();
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+// Inicialización de Firebase
+const app = firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
   const taskTable = document.getElementById('tasks-table').querySelector('tbody');
   const historyTable = document.getElementById('history-table').querySelector('tbody');
