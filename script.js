@@ -15,13 +15,13 @@ const db = firebase.firestore();
 
 // Funciones y variables de la aplicación
 const taskTable = document.getElementById('tasks-table').querySelector('tbody');
-const historyTable = document.getElementById('history-table').querySelector('tbody');
+//const historyTable = document.getElementById('history-table').querySelector('tbody');
 
 document.getElementById('add-task').addEventListener('click', addTask);
 document.getElementById('edit-task').addEventListener('click', editTask);
 document.getElementById('delete-task').addEventListener('click', deleteTask);
-document.getElementById('search-button').addEventListener('click', searchHistory);
-document.getElementById('clear-history').addEventListener('click', clearHistory);
+//document.getElementById('search-button').addEventListener('click', searchHistory);
+//document.getElementById('clear-history').addEventListener('click', clearHistory);
 document.getElementById('filter-section').addEventListener('change', filterTasks);
 
 window.addEventListener('beforeunload', saveData);
@@ -124,27 +124,27 @@ function deleteTask() {
   });
 }
 
-function searchHistory() {
+/*function searchHistory() {
   const searchQuery = document.getElementById('search').value.trim().toLowerCase();
   if (searchQuery === '') {
     renderHistory();
     return;
-  }
+  }*/
 
-  const filteredHistory = history.filter(task =>
+ /* const filteredHistory = history.filter(task =>
     task.title.toLowerCase().includes(searchQuery) ||
     task.details.toLowerCase().includes(searchQuery) ||
     task.section.toLowerCase().includes(searchQuery)
   );
   renderHistory(filteredHistory);
-}
+}*/
 
-function clearHistory() {
+/*function clearHistory() {
   if (confirm('¿Está seguro de que desea borrar todo el historial?')) {
     history = [];
     renderHistory();
   }
-}
+}*/
 
 function filterTasks() {
   const filterValue = document.getElementById('filter-section').value;
