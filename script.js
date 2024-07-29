@@ -17,41 +17,23 @@ const db = firebase.firestore();
 let tasks = [];
 let history = [];
 
-const taskTable = document.getElementById('tasks-table').querySelector('tbody');
-const historyTable = document.getElementById('history-table').querySelector('tbody');
+document.addEventListener('DOMContentLoaded', () => {
+  const taskTable = document.getElementById('tasks-table').querySelector('tbody');
+  const historyTable = document.getElementById('history-table').querySelector('tbody');
 
-document.getElementById('add-task').addEventListener('click', addTask);
-document.getElementById('edit-task').addEventListener('click', editTask);
-document.getElementById('delete-task').addEventListener('click', deleteTask);
-document.getElementById('search-button').addEventListener('click', searchHistory);
-document.getElementById('clear-history').addEventListener('click', clearHistory);
-document.getElementById('filter-section').addEventListener('change', filterTasks);
+  document.getElementById('add-task').addEventListener('click', addTask);
+  document.getElementById('edit-task').addEventListener('click', editTask);
+  document.getElementById('delete-task').addEventListener('click', deleteTask);
+  document.getElementById('search-button').addEventListener('click', searchHistory);
+  document.getElementById('clear-history').addEventListener('click', clearHistory);
+  document.getElementById('filter-section').addEventListener('change', filterTasks);
 
-window.addEventListener('beforeunload', saveData);
-
-function setDefaultDateTime() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  const localDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
-  
-  document.getElementById('date-time').value = localDateTime;
-  document.getElementById('deadline').value = localDateTime;
-}
-
-function clearFields() {
-  document.getElementById('title').value = '';
-  document.getElementById('details').value = '';
-  document.getElementById('date-time').value = '';
-  document.getElementById('person-in-charge').value = '';
-  document.getElementById('email').value = '';
-  document.getElementById('deadline').value = '';
-  document.getElementById('section').value = 'Agenda ISJUP';
   setDefaultDateTime();
-}
+  tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+  history = JSON.parse(localStorage.getItem('history')) || [];
+  renderTasks();
+  renderHistory();
+});
 
 function addTask() {
   const title = document.getElementById('title').value.trim();
@@ -62,12 +44,12 @@ function addTask() {
   const deadline = document.getElementById('deadline').value;
   const personInCharge = document.getElementById('person-in-charge').value.trim();
 
-  if (title === '' || details === '' || dateTime === '' || section === '' || deadline === '') {
+  if (!title || !details || !dateTime || !section || !deadline) {
     alert('Por favor, complete todos los campos obligatorios.');
     return;
   }
 
-  const encryptedEmail = email ? encryptEmail(email) : '';
+  const encryptedEmail = email ? encryptEmail(email) : ''; 
   const newTask = { section, title, details, dateTime, email: encryptedEmail, deadline, personInCharge, status: 'Pendiente' };
 
   db.collection('tasks').add(newTask)
