@@ -1,27 +1,14 @@
+// Configuración de Firebase
 import { firebaseConfig } from './config.js';
-import dotenv from 'dotenv';
-import CryptoJS from 'crypto-js';
-import firebase from 'firebase/app';
-import 'firebase/firestore';
-
-dotenv.config();
-
-// Inicialización de Firebase
-const app = firebase.initializeApp(firebaseConfig);
+firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 document.addEventListener('DOMContentLoaded', function() {
   const taskTable = document.getElementById('tasks-table').querySelector('tbody');
-  const historyTable = document.getElementById('history-table').querySelector('tbody');
 
   document.getElementById('add-task').addEventListener('click', addTask);
   document.getElementById('edit-task').addEventListener('click', editTask);
   document.getElementById('delete-task').addEventListener('click', deleteTask);
-  document.getElementById('search-button').addEventListener('click', searchHistory);
-  document.getElementById('clear-history').addEventListener('click', clearHistory);
-  document.getElementById('filter-section').addEventListener('change', filterTasks);
-
-  window.addEventListener('beforeunload', saveData);
 
   function setDefaultDateTime() {
     const now = new Date();
@@ -31,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const localDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
-    
+
     document.getElementById('date-time').value = localDateTime;
     document.getElementById('deadline').value = localDateTime;
   }
@@ -61,17 +48,12 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
 
-    const encryptedEmail = email ? encryptEmail(email) : ''; // Encriptar el correo si está presente
-    const newTask = { section, title, details, dateTime, email: encryptedEmail, deadline, personInCharge, status: 'Pendiente' };
+    const newTask = { section, title, details, dateTime, email, deadline, personInCharge, status: 'Pendiente' };
 
     db.collection('tasks').add(newTask)
       .then(() => {
-        tasks.push(newTask);
-        renderTasks();
+        loadTasks();
         clearFields();
-        if (email) {
-          sendEmailNotification(email, newTask); // Enviar correo si se proporciona
-        }
       })
       .catch(error => {
         console.error("Error adding task: ", error);
@@ -85,19 +67,30 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
 
-    const taskIndex = selectedTasks[0].getAttribute('data-index');
-    const task = tasks[taskIndex];
+    const taskId = selectedTasks[0].getAttribute('data-id');
+    const title = document.getElementById('title').value.trim();
+    const details = document.getElementById('details').value.trim();
+    const dateTime = document.getElementById('date-time').value;
+    const section = document.getElementById('section').value;
+    const email = document.getElementById('email').value.trim();
+    const deadline = document.getElementById('deadline').value;
+    const personInCharge = document.getElementById('person-in-charge').value.trim();
 
-    document.getElementById('section').value = task.section;
-    document.getElementById('title').value = task.title;
-    document.getElementById('details').value = task.details;
-    document.getElementById('date-time').value = task.dateTime;
-    document.getElementById('email').value = decryptEmail(task.email);
-    document.getElementById('deadline').value = task.deadline;
-    document.getElementById('person-in-charge').value = task.personInCharge;
+    if (title === '' || details === '' || dateTime === '' || section === '' || deadline === '') {
+      alert('Por favor, complete todos los campos obligatorios.');
+      return;
+    }
 
-    tasks.splice(taskIndex, 1);
-    renderTasks();
+    const updatedTask = { section, title, details, dateTime, email, deadline, personInCharge, status: 'Pendiente' };
+
+    db.collection('tasks').doc(taskId).update(updatedTask)
+      .then(() => {
+        loadTasks();
+        clearFields();
+      })
+      .catch(error => {
+        console.error("Error editing task: ", error);
+      });
   }
 
   function deleteTask() {
@@ -108,12 +101,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     selectedTasks.forEach(taskRow => {
-      const taskIndex = taskRow.getAttribute('data-index');
-      const task = tasks[taskIndex];
-      db.collection('tasks').doc(task.id).delete()
+      const taskId = taskRow.getAttribute('data-id');
+      db.collection('tasks').doc(taskId).delete()
         .then(() => {
-          tasks.splice(taskIndex, 1);
-          renderTasks();
+          loadTasks();
         })
         .catch(error => {
           console.error("Error removing task: ", error);
@@ -121,54 +112,28 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  function searchHistory() {
-    const searchQuery = document.getElementById('search').value.trim().toLowerCase();
-    if (searchQuery === '') {
-      renderHistory();
-      return;
-    }
-
-    const filteredHistory = history.filter(task =>
-      task.title.toLowerCase().includes(searchQuery) ||
-      task.details.toLowerCase().includes(searchQuery) ||
-      task.section.toLowerCase().includes(searchQuery)
-    );
-    renderHistory(filteredHistory);
+  function loadTasks() {
+    db.collection('tasks').get().then(querySnapshot => {
+      const tasks = [];
+      querySnapshot.forEach(doc => {
+        tasks.push({ ...doc.data(), id: doc.id });
+      });
+      renderTasks(tasks);
+    });
   }
 
-  function clearHistory() {
-    if (confirm('¿Está seguro de que desea borrar todo el historial?')) {
-      history = [];
-      renderHistory();
-    }
-  }
-
-  function filterTasks() {
-    const filterValue = document.getElementById('filter-section').value;
-    if (filterValue === 'Todo') {
-      renderTasks();
-    } else {
-      const filteredTasks = tasks.filter(task => task.section === filterValue);
-      renderTasks(filteredTasks);
-    }
-  }
-
-  function saveData() {
-    localStorage.setItem('tasks', JSON.stringify(tasks));
-    localStorage.setItem('history', JSON.stringify(history));
-  }
-
-  function renderTasks(filteredTasks = tasks) {
+  function renderTasks(tasks) {
     taskTable.innerHTML = '';
-    filteredTasks.forEach((task, index) => {
+
+    tasks.forEach((task, index) => {
       const row = document.createElement('tr');
-      row.setAttribute('data-index', index);
+      row.setAttribute('data-id', task.id);
       row.innerHTML = `
         <td>${task.section}</td>
         <td>${task.title}</td>
         <td>${task.details}</td>
         <td>${task.dateTime}</td>
-        <td>${task.email ? showPartialEmail(task.email) : ''}</td>
+        <td>${task.email}</td>
         <td>${task.deadline}</td>
         <td>${task.personInCharge}</td>
         <td>${task.status}</td>
@@ -179,60 +144,27 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  function renderHistory(filteredHistory = history) {
-    historyTable.innerHTML = '';
-    filteredHistory.forEach((task, index) => {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${task.section}</td>
-        <td>${task.title}</td>
-        <td>${task.details}</td>
-        <td>${task.dateTime}</td>
-        <td>${task.email ? showPartialEmail(task.email) : ''}</td>
-        <td>${task.deadline}</td>
-        <td>${task.personInCharge}</td>
-        <td>${task.status}</td>
-      `;
-      historyTable.appendChild(row);
-    });
+  function toggleTaskStatus(index) {
+    const taskRow = document.querySelector(`tr[data-index="${index}"]`);
+    const taskId = taskRow.getAttribute('data-id');
+    const task = tasks[index];
+
+    task.status = task.status === 'Pendiente' ? 'Completada' : 'Pendiente';
+
+    db.collection('tasks').doc(taskId).update({ status: task.status })
+      .then(() => {
+        loadTasks();
+      })
+      .catch(error => {
+        console.error("Error updating task status: ", error);
+      });
   }
 
-  function encryptEmail(email) {
-    return CryptoJS.AES.encrypt(email, 'secret key 123').toString();
+  function selectTask(index) {
+    const taskRow = document.querySelector(`tr[data-index="${index}"]`);
+    taskRow.classList.toggle('selected');
   }
-
-  function decryptEmail(encryptedEmail) {
-    const bytes = CryptoJS.AES.decrypt(encryptedEmail, 'secret key 123');
-    return bytes.toString(CryptoJS.enc.Utf8);
-  }
-
-  function showPartialEmail(encryptedEmail) {
-    const email = decryptEmail(encryptedEmail);
-    const atIndex = email.indexOf('@');
-    return email.slice(0, atIndex) + '*****';
-  }
-
-  function sendEmailNotification(email, task) {
-    // Aquí debes implementar el envío de correo electrónico con tu servicio de correo preferido.
-    // Ejemplo utilizando EmailJS:
-    // emailjs.send("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", {
-    //   to_email: email,
-    //   title: task.title,
-    //   details: task.details,
-    //   start_date: task.dateTime,
-    //   deadline: task.deadline
-    // });
-  }
-
-  let tasks = [];
-  let history = [];
-
-  db.collection('tasks').get().then((querySnapshot) => {
-    querySnapshot.forEach((doc) => {
-      tasks.push({ ...doc.data(), id: doc.id });
-    });
-    renderTasks();
-  });
 
   setDefaultDateTime();
+  loadTasks();
 });
