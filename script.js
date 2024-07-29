@@ -1,6 +1,6 @@
 // Configuración de Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyDb7448QL73qBrC_YdNiXMGYD0QZH-i7-c",
+  apiKey: "API_KEY",
   authDomain: "taskmaster-f650b.firebaseapp.com",
   projectId: "taskmaster-f650b",
   storageBucket: "taskmaster-f650b.appspot.com",
@@ -67,7 +67,7 @@ function addTask() {
     return;
   }
 
-  const encryptedEmail = email ? encryptEmail(email) : ''; // Encriptar el correo si está presente
+  const encryptedEmail = email ? encryptEmail(email) : '';
   const newTask = { section, title, details, dateTime, email: encryptedEmail, deadline, personInCharge, status: 'Pendiente' };
 
   db.collection('tasks').add(newTask)
@@ -76,7 +76,7 @@ function addTask() {
       renderTasks();
       clearFields();
       if (email) {
-        sendEmailNotification(email, newTask); // Enviar correo si se proporciona
+        sendEmailNotification(email, newTask);
       }
     })
     .catch(error => {
@@ -203,11 +203,11 @@ function renderHistory(historyList = history) {
 }
 
 function encryptEmail(email) {
-  return CryptoJS.AES.encrypt(email, '*******8').toString();
+  return CryptoJS.AES.encrypt(email, 'encryption-key').toString();
 }
 
 function decryptEmail(encryptedEmail) {
-  const bytes = CryptoJS.AES.decrypt(encryptedEmail, '*******8');
+  const bytes = CryptoJS.AES.decrypt(encryptedEmail, 'encryption-key');
   return bytes.toString(CryptoJS.enc.Utf8);
 }
 
@@ -243,4 +243,3 @@ function sendEmailNotification(email, task) {
   // Aquí puedes implementar el envío de correos electrónicos utilizando una API de correo electrónico como EmailJS
   console.log(`Enviar notificación a ${email} sobre la tarea: ${task.title}`);
 }
-
