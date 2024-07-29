@@ -1,6 +1,8 @@
-// app.js
 import { firebaseConfig } from './config.js';
 import dotenv from 'dotenv';
+import CryptoJS from 'crypto-js';
+import firebase from 'firebase/app';
+import 'firebase/firestore';
 
 dotenv.config();
 
@@ -8,6 +10,7 @@ dotenv.config();
 const app = firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
+document.addEventListener('DOMContentLoaded', function() {
   const taskTable = document.getElementById('tasks-table').querySelector('tbody');
   const historyTable = document.getElementById('history-table').querySelector('tbody');
 
@@ -209,19 +212,17 @@ const db = firebase.firestore();
     return email.slice(0, atIndex) + '*****';
   }
 
-  //function sendEmailNotification(email, task) {
+  function sendEmailNotification(email, task) {
     // Aquí debes implementar el envío de correo electrónico con tu servicio de correo preferido.
     // Ejemplo utilizando EmailJS:
     // emailjs.send("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", {
     //   to_email: email,
     //   title: task.title,
-    //  
-
- //details: task.details,
+    //   details: task.details,
     //   start_date: task.dateTime,
     //   deadline: task.deadline
-    /* });*/
-/* }*/
+    // });
+  }
 
   let tasks = [];
   let history = [];
@@ -234,4 +235,4 @@ const db = firebase.firestore();
   });
 
   setDefaultDateTime();
-};
+});
