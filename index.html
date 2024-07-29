@@ -1,71 +1,20 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gestión de Tareas</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>Task Manager</title>
+  <link rel="stylesheet" href="estilo.css">
+  <script defer src="https://www.gstatic.com/firebasejs/9.1.2/firebase-app-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/9.1.2/firebase-firestore-compat.js"></script>
+  <script defer src="script.js"></script>
 </head>
 <body>
   <div class="container">
-    <h1>Gestión de Tareas</h1>
-
-    <div class="form-group">
-      <label for="section">Sección:</label>
+    <h1>Task Manager</h1>
+    <form id="task-form">
+      <label for="section">Section:</label>
       <select id="section">
-        <option value="Agenda ISJUP">Agenda ISJUP</option>
-        <option value="Correo">Correo</option>
-                <option value="Evaluación de Desempeño">Evaluación de Desempeño</option>
-        <option value="Informes">Informes</option>
-        <option value="Misión">Misión</option>
-        <option value="Otras Solicitudes">Otras Solicitudes</option>
-        <option value="Proyectos">Proyectos</option>
-        <option value="Solicitudes Superiores">Solicitudes Superiores</option>
-        <option value="Tareas">Tareas</option>
-        <option value="Reuniones">Reuniones</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label for="title">Título: <span class="required">*</span></label>
-      <input type="text" id="title" placeholder="Ingrese el título de la tarea" required>
-    </div>
-
-    <div class="form-group">
-      <label for="details">Detalles: <span class="required">*</span></label>
-      <textarea id="details" placeholder="Ingrese los detalles de la tarea" required></textarea>
-    </div>
-
-    <div class="form-group">
-      <label for="date-time">Fecha y Hora de Inicio: <span class="required">*</span></label>
-      <input type="datetime-local" id="date-time" required>
-    </div>
-
-    <div class="form-group">
-      <label for="email">Correo Electrónico:</label>
-      <input type="email" id="email" placeholder="Ingrese el correo electrónico">
-    </div>
-
-    <div class="form-group">
-      <label for="deadline">Fecha Límite: <span class="required">*</span></label>
-      <input type="datetime-local" id="deadline" required>
-    </div>
-
-    <div class="form-group">
-      <label for="person-in-charge">Encargado:</label>
-      <input type="text" id="person-in-charge" placeholder="Ingrese el nombre del encargado">
-    </div>
-
-    <div class="form-buttons">
-      <button id="add-task">Agregar Tarea</button>
-      <button id="edit-task">Editar Tarea</button>
-      <button id="delete-task">Eliminar Tarea</button>
-    </div>
-
-    <div class="filter-group">
-      <label for="filter-section">Filtrar por Sección:</label>
-      <select id="filter-section">
-        <option value="Todo">Todo</option>
         <option value="Agenda ISJUP">Agenda ISJUP</option>
         <option value="Correo">Correo</option>
         <option value="Evaluación de Desempeño">Evaluación de Desempeño</option>
@@ -77,52 +26,39 @@
         <option value="Tareas">Tareas</option>
         <option value="Reuniones">Reuniones</option>
       </select>
-    </div>
-
-    <h2>Tareas</h2>
+      <label for="title">Título:</label>
+      <input type="text" id="title" placeholder="Ingrese título" required>
+      <label for="details">Detalles:</label>
+      <textarea id="details" placeholder="Ingrese detalles" required></textarea>
+      <label for="date-time">Fecha de inicio:</label>
+      <input type="datetime-local" id="date-time" required>
+      <label for="deadline">Fecha límite:</label>
+      <input type="datetime-local" id="deadline" required>
+      <label for="email">Correo:</label>
+      <input type="email" id="email" placeholder="Ingrese Correo (opcional)">
+      <label for="person-in-charge">Encargado:</label>
+      <input type="text" id="person-in-charge" placeholder="Ingrese Nombre de Encargado">
+      <button type="button" id="add-task">Add Task</button>
+      <button type="button" id="edit-task">Edit Task</button>
+      <button type="button" id="delete-task">Delete Task</button>
+    </form>
     <table id="tasks-table">
       <thead>
         <tr>
-          <th>Sección</th>
-          <th>Título</th>
-          <th>Detalles</th>
-          <th>Fecha y Hora</th>
-          <th>Correo Electrónico</th>
-          <th>Fecha Límite</th>
-          <th>Encargado</th>
-          <th>Estado</th>
-          <th>Completado</th>
-          <th>Seleccionar</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-
-    <h2>Historial</h2>
-    <div class="search-group">
-      <input type="text" id="search" placeholder="Buscar en el historial">
-      <button id="search-button">Buscar</button>
-      <button id="clear-history">Borrar Historial</button>
-    </div>
-    <table id="history-table">
-      <thead>
-        <tr>
-          <th>Sección</th>
-          <th>Título</th>
-          <th>Detalles</th>
-          <th>Fecha y Hora</th>
-          <th>Correo Electrónico</th>
-          <th>Fecha Límite</th>
-          <th>Encargado</th>
-          <th>Estado</th>
+          <th>Section</th>
+          <th>Title</th>
+          <th>Details</th>
+          <th>Start Date</th>
+          <th>Email</th>
+          <th>Deadline</th>
+          <th>Person in Charge</th>
+          <th>Status</th>
+          <th>Completed</th>
+          <th>Select</th>
         </tr>
       </thead>
       <tbody></tbody>
     </table>
   </div>
-  <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/crypto-js@3.1.9-1/crypto-js.js"></script>
-  <script type="module" src="script.js"></script>
 </body>
 </html>
