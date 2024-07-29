@@ -5,15 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gestor de Tareas</title>
   <link rel="stylesheet" href="styles.css">
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
-    <script src="script.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
+  <script src="script.js"></script>
 </head>
 <body>
   <div class="container">
     <h1>Gestor de Tareas</h1>
     <form id="task-form">
+      <!-- Formulario para añadir tareas -->
       <label for="section">Sección:</label>
       <select id="section">
         <option value="Agenda ISJUP">Agenda ISJUP</option>
@@ -43,6 +44,8 @@
       <button type="button" id="edit-task">Edit Task</button>
       <button type="button" id="delete-task">Delete Task</button>
     </form>
+
+    <!-- Tabla de Tareas -->
     <table id="tasks-table">
       <thead>
         <tr>
@@ -56,6 +59,24 @@
           <th>Estado</th>
           <th>Completado</th>
           <th>Editar</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <!-- Tabla de Historial -->
+    <h2>Historial de Tareas</h2>
+    <table id="history-table">
+      <thead>
+        <tr>
+          <th>Sección</th>
+          <th>Título</th>
+          <th>Detalles</th>
+          <th>Fecha Inicial</th>
+          <th>Correo</th>
+          <th>Fecha Límite</th>
+          <th>Encargado</th>
+          <th>Estado</th>
         </tr>
       </thead>
       <tbody></tbody>
