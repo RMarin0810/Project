@@ -1,6 +1,6 @@
 // Configuración de Firebase
 const firebaseConfig = {
-  apiKey: "API_KEY",
+  apiKey: "AIzaSyDb7448QL73qBrC_YdNiXMGYD0QZH-i7-c",
   authDomain: "taskmaster-f650b.firebaseapp.com",
   projectId: "taskmaster-f650b",
   storageBucket: "taskmaster-f650b.appspot.com",
