@@ -5,10 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gestor de Tareas</title>
   <link rel="stylesheet" href="styles.css">
+  <!-- Firebase y CryptoJS -->
   <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
-  <script src="script.js"></script>
+  <script src="script.js" defer></script>
 </head>
 <body>
   <div class="container">
@@ -40,9 +41,9 @@
       <input type="email" id="email" placeholder="Ingrese Correo (opcional)">
       <label for="person-in-charge">Encargado:</label>
       <input type="text" id="person-in-charge" placeholder="Ingrese Nombre de Encargado">
-      <button type="button" id="add-task">Add Task</button>
-      <button type="button" id="edit-task">Edit Task</button>
-      <button type="button" id="delete-task">Delete Task</button>
+      <button type="button" id="add-task">Añadir Tarea</button>
+      <button type="button" id="edit-task">Editar Tarea</button>
+      <button type="button" id="delete-task">Eliminar Tarea</button>
     </form>
 
     <!-- Tabla de Tareas -->
