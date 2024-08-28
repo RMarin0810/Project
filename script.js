@@ -24,15 +24,9 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('add-task').addEventListener('click', addTask);
   document.getElementById('edit-task').addEventListener('click', editTask);
   document.getElementById('delete-task').addEventListener('click', deleteTask);
-  document.getElementById('search-button').addEventListener('click', searchHistory);
-  document.getElementById('clear-history').addEventListener('click', clearHistory);
-  document.getElementById('filter-section').addEventListener('change', filterTasks);
 
+  loadTasksFromFirestore();
   setDefaultDateTime();
-  tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-  history = JSON.parse(localStorage.getItem('history')) || [];
-  renderTasks();
-  renderHistory();
 });
 
 function addTask() {
@@ -66,89 +60,23 @@ function addTask() {
     });
 }
 
-function editTask() {
-  const selectedTasks = document.querySelectorAll('tr.selected');
-  if (selectedTasks.length !== 1) {
-    alert('Por favor, seleccione una única tarea para editar.');
-    return;
-  }
-
-  const taskIndex = selectedTasks[0].getAttribute('data-index');
-  const task = tasks[taskIndex];
-
-  document.getElementById('section').value = task.section;
-  document.getElementById('title').value = task.title;
-  document.getElementById('details').value = task.details;
-  document.getElementById('date-time').value = task.dateTime;
-  document.getElementById('email').value = decryptEmail(task.email);
-  document.getElementById('deadline').value = task.deadline;
-  document.getElementById('person-in-charge').value = task.personInCharge;
-
-  tasks.splice(taskIndex, 1);
-  renderTasks();
-}
-
-function deleteTask() {
-  const selectedTasks = document.querySelectorAll('tr.selected');
-  if (selectedTasks.length === 0) {
-    alert('Por favor, seleccione al menos una tarea para eliminar.');
-    return;
-  }
-
-  selectedTasks.forEach(taskRow => {
-    const taskIndex = taskRow.getAttribute('data-index');
-    const task = tasks[taskIndex];
-
-    db.collection('tasks').where("title", "==", task.title)
-      .get()
-      .then(querySnapshot => {
-        querySnapshot.forEach(doc => {
-          doc.ref.delete();
-        });
-      })
-      .catch(error => {
-        console.error("Error removing task: ", error);
-      });
-
-    tasks.splice(taskIndex, 1);
-    history.push(task);
+function loadTasksFromFirestore() {
+  db.collection('tasks').get().then((querySnapshot) => {
+    tasks = [];
+    querySnapshot.forEach((doc) => {
+      tasks.push(doc.data());
+    });
+    renderTasks();
+  }).catch((error) => {
+    console.error("Error loading tasks: ", error);
   });
-
-  renderTasks();
-  renderHistory();
 }
 
-function searchHistory() {
-  const searchTerm = document.getElementById('search-term').value.trim().toLowerCase();
-  const filteredHistory = history.filter(task => {
-    return task.title.toLowerCase().includes(searchTerm) || 
-           task.details.toLowerCase().includes(searchTerm) ||
-           task.section.toLowerCase().includes(searchTerm);
-  });
-  renderHistory(filteredHistory);
-}
-
-function clearHistory() {
-  history = [];
-  renderHistory();
-}
-
-function filterTasks() {
-  const section = document.getElementById('filter-section').value;
-  const filteredTasks = section === 'Todas' ? tasks : tasks.filter(task => task.section === section);
-  renderTasks(filteredTasks);
-}
-
-function saveData() {
-  localStorage.setItem('tasks', JSON.stringify(tasks));
-  localStorage.setItem('history', JSON.stringify(history));
-}
-
-function renderTasks(taskList = tasks) {
+function renderTasks() {
+  const taskTable = document.getElementById('tasks-table').querySelector('tbody');
   taskTable.innerHTML = '';
-  taskList.forEach((task, index) => {
+  tasks.forEach((task, index) => {
     const row = document.createElement('tr');
-    row.setAttribute('data-index', index);
     row.innerHTML = `
       <td>${task.section}</td>
       <td>${task.title}</td>
@@ -162,25 +90,6 @@ function renderTasks(taskList = tasks) {
       <td><button onclick="selectTask(${index})">Seleccionar</button></td>
     `;
     taskTable.appendChild(row);
-  });
-}
-
-function renderHistory(historyList = history) {
-  historyTable.innerHTML = '';
-  historyList.forEach((task, index) => {
-    const row = document.createElement('tr');
-    row.setAttribute('data-index', index);
-    row.innerHTML = `
-      <td>${task.section}</td>
-      <td>${task.title}</td>
-      <td>${task.details}</td>
-      <td>${task.dateTime}</td>
-      <td>${showPartialEmail(task.email)}</td>
-      <td>${task.deadline}</td>
-      <td>${task.personInCharge}</td>
-      <td>${task.status}</td>
-    `;
-    historyTable.appendChild(row);
   });
 }
 
@@ -210,18 +119,4 @@ function selectTask(index) {
   const rows = document.querySelectorAll('tr');
   rows.forEach(row => row.classList.remove('selected'));
   rows[index].classList.add('selected');
-}
-
-// Cargar tareas y historial desde localStorage
-document.addEventListener('DOMContentLoaded', () => {
-  tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-  history = JSON.parse(localStorage.getItem('history')) || [];
-  renderTasks();
-  renderHistory();
-  setDefaultDateTime();
-});
-
-function sendEmailNotification(email, task) {
-  // Aquí puedes implementar el envío de correos electrónicos utilizando una API de correo electrónico como EmailJS
-  console.log(`Enviar notificación a ${email} sobre la tarea: ${task.title}`);
 }
