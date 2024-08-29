@@ -1,17 +1,15 @@
-// Configuración de Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyDb7448QL73qBrC_YdNiXMGYD0QZH-i7-c",
-  authDomain: "taskmaster-f650b.firebaseapp.com",
-  projectId: "taskmaster-f650b",
-  storageBucket: "taskmaster-f650b.appspot.com",
-  messagingSenderId: "196468952105",
-  appId: "1:196468952105:web:c71cb539331e3e8f882038",
-  measurementId: "G-LH8HFCBJ75"
-};
+// Configuración de Superbase
+// Importa la biblioteca (si usas módulos en JavaScript)
+import { createClient } from '@supabase/supabase-js';
 
-// Inicialización de Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+// O usa la variable global si incluiste el script directamente
+const { createClient } = supabase;
+
+// Configura tu cliente Supabase con la URL y clave API
+const supabaseUrl = 'postgresql://postgres.tsiiqfmwyjyufpnxsnps:[YOUR-PASSWORD]@aws-0-us-west-1.pooler.supabase.com:6543/postgres';  // reemplaza con tu URL
+const supabaseKey = 'your-anon-public-api-key';  // reemplaza con tu clave pública
+
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Funciones y variables de la aplicación
 let tasks = [];
