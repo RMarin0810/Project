@@ -1,13 +1,9 @@
 // Configuración de Superbase
-// Importa la biblioteca (si usas módulos en JavaScript)
-import { createClient } from '@supabase/supabase-js';
 
-// O usa la variable global si incluiste el script directamente
-const { createClient } = supabase;
-
-// Configura tu cliente Supabase con la URL y clave API
-const supabaseUrl = 'postgresql://postgres.tsiiqfmwyjyufpnxsnps:[YOUR-PASSWORD]@aws-0-us-west-1.pooler.supabase.com:6543/postgres';  // reemplaza con tu URL
-const supabaseKey = 'your-anon-public-api-key';  // reemplaza con tu clave pública
+import { createClient } from '@supabase/supabase-js'
+const supabaseUrl = 'https://tsiiqfmwyjyufpnxsnps.supabase.co'
+const supabaseKey = process.env.SUPABASE_KEY
+const supabase = createClient(supabaseUrl, supabaseKey)
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
