@@ -39,30 +39,36 @@ function addTask() {
   const encryptedEmail = email ? encryptEmail(email) : ''; 
   const newTask = { section, title, details, dateTime, email: encryptedEmail, deadline, personInCharge, status: 'Pendiente' };
 
-  db.collection('tasks').add(newTask)
-    .then(() => {
+  // Reemplazar Firestore con Supabase
+  supabase
+    .from('tasks')
+    .insert([newTask])
+    .then(({ data, error }) => {
+      if (error) {
+        console.error('Error adding task:', error);
+        return;
+      }
       tasks.push(newTask);
       renderTasks();
       clearFields();
       if (email) {
         sendEmailNotification(email, newTask);
       }
-    })
-    .catch(error => {
-      console.error("Error adding task: ", error);
     });
 }
 
 function loadTasksFromFirestore() {
-  db.collection('tasks').get().then((querySnapshot) => {
-    tasks = [];
-    querySnapshot.forEach((doc) => {
-      tasks.push(doc.data());
+  supabase
+    .from('tasks')
+    .select('*')
+    .then(({ data, error }) => {
+      if (error) {
+        console.error('Error loading tasks:', error);
+        return;
+      }
+      tasks = data || [];
+      renderTasks();
     });
-    renderTasks();
-  }).catch((error) => {
-    console.error("Error loading tasks: ", error);
-  });
 }
 
 function renderTasks() {
