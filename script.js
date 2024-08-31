@@ -2,25 +2,23 @@
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = 'https://tsiiqfmwyjyufpnxsnps.supabase.co';
-const supabaseKey = process.env.SUPABASE_KEY; // Asegúrate de que SUPABASE_KEY esté definida en tu entorno.
+const supabaseKey = process.env.SUPABASE_KEY; // Asegúrate de que esta clave esté configurada correctamente en tu entorno
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+async function addTaskToSupabase(task) {
+  const { data, error } = await supabase
+    .from('tasks')
+    .insert([task]);
 
-// Funciones y variables de la aplicación
-let tasks = [];
-let history = [];
-
-document.addEventListener('DOMContentLoaded', () => {
-  const taskTable = document.getElementById('tasks-table').querySelector('tbody');
-  const historyTable = document.getElementById('history-table').querySelector('tbody');
-
-  document.getElementById('add-task').addEventListener('click', addTask);
-  document.getElementById('edit-task').addEventListener('click', editTask);
-  document.getElementById('delete-task').addEventListener('click', deleteTask);
-
-  loadTasksFromFirestore();
-  setDefaultDateTime();
-});
+  if (error) {
+    console.error("Error adding task:", error);
+  } else {
+    console.log("Task added:", data);
+    tasks.push(task); // Actualiza la lista local de tareas
+    renderTasks();
+    clearFields();
+  }
+}
 
 function addTask() {
   const title = document.getElementById('title').value.trim();
@@ -37,85 +35,63 @@ function addTask() {
   }
 
   const encryptedEmail = email ? encryptEmail(email) : ''; 
-  const newTask = { section, title, details, dateTime, email: encryptedEmail, deadline, personInCharge, status: 'Pendiente' };
+  const newTask = {
+    section,
+    title,
+    details,
+    date_time: dateTime,
+    email: encryptedEmail,
+    deadline,
+    person_in_charge: personInCharge,
+    status: 'Pendiente'
+  };
 
-  // Reemplazar Firestore con Supabase
-  supabase
+  addTaskToSupabase(newTask);
+}
+
+
+async function loadTasksFromSupabase() {
+  const { data, error } = await supabase
     .from('tasks')
-    .insert([newTask])
-    .then(({ data, error }) => {
-      if (error) {
-        console.error('Error adding task:', error);
-        return;
-      }
-      tasks.push(newTask);
-      renderTasks();
-      clearFields();
-      if (email) {
-        sendEmailNotification(email, newTask);
-      }
-    });
+    .select('*');
+
+  if (error) {
+    console.error("Error loading tasks:", error);
+  } else {
+    tasks = data;
+    renderTasks();
+  }
 }
 
-function loadTasksFromFirestore() {
-  supabase
+document.addEventListener('DOMContentLoaded', () => {
+  loadTasksFromSupabase();
+  setDefaultDateTime();
+});
+
+async function updateTaskInSupabase(taskId, updatedTask) {
+  const { data, error } = await supabase
     .from('tasks')
-    .select('*')
-    .then(({ data, error }) => {
-      if (error) {
-        console.error('Error loading tasks:', error);
-        return;
-      }
-      tasks = data || [];
-      renderTasks();
-    });
+    .update(updatedTask)
+    .eq('id', taskId);
+
+  if (error) {
+    console.error("Error updating task:", error);
+  } else {
+    console.log("Task updated:", data);
+    renderTasks();
+  }
 }
 
-function renderTasks() {
-  const taskTable = document.getElementById('tasks-table').querySelector('tbody');
-  taskTable.innerHTML = '';
-  tasks.forEach((task, index) => {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>${task.section}</td>
-      <td>${task.title}</td>
-      <td>${task.details}</td>
-      <td>${task.dateTime}</td>
-      <td>${showPartialEmail(task.email)}</td>
-      <td>${task.deadline}</td>
-      <td>${task.personInCharge}</td>
-      <td>${task.status}</td>
-      <td><button onclick="toggleTaskStatus(${index})">Completar</button></td>
-      <td><button onclick="selectTask(${index})">Seleccionar</button></td>
-    `;
-    taskTable.appendChild(row);
-  });
-}
+async function deleteTaskFromSupabase(taskId) {
+  const { data, error } = await supabase
+    .from('tasks')
+    .delete()
+    .eq('id', taskId);
 
-function encryptEmail(email) {
-  return CryptoJS.AES.encrypt(email, 'encryption-key').toString();
-}
-
-function decryptEmail(encryptedEmail) {
-  const bytes = CryptoJS.AES.decrypt(encryptedEmail, 'encryption-key');
-  return bytes.toString(CryptoJS.enc.Utf8);
-}
-
-function showPartialEmail(encryptedEmail) {
-  const email = decryptEmail(encryptedEmail);
-  const [username, domain] = email.split('@');
-  const maskedUsername = username.slice(0, 2) + '*'.repeat(username.length - 2);
-  return `${maskedUsername}@${domain}`;
-}
-
-function toggleTaskStatus(index) {
-  const task = tasks[index];
-  task.status = task.status === 'Pendiente' ? 'Completada' : 'Pendiente';
-  renderTasks();
-}
-
-function selectTask(index) {
-  const rows = document.querySelectorAll('tr');
-  rows.forEach(row => row.classList.remove('selected'));
-  rows[index].classList.add('selected');
+  if (error) {
+    console.error("Error deleting task:", error);
+  } else {
+    console.log("Task deleted:", data);
+    renderTasks();
+  }
 }
