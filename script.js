@@ -1,9 +1,7 @@
-// Configuración de Superbase
-import { createClient } from '@supabase/supabase-js';
-
+// Configuración de Supabase
 const supabaseUrl = 'https://tsiiqfmwyjyufpnxsnps.supabase.co';
-const supabaseKey = process.env.SUPABASE_KEY; // Asegúrate de que esta clave esté configurada correctamente en tu entorno
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzaWlxZm13eWp5dWZwbnhzbnBzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjQ4OTcyNzMsImV4cCI6MjA0MDQ3MzI3M30.rwXtg9LCO1g_Us2BdrXwaK4Y0UfD-Fndax7RPYQgtkI'; // Puedes definirla aquí si no utilizas variables de entorno
+const supabase = Supabase.createClient(supabaseUrl, supabaseKey);
 
 async function addTaskToSupabase(task) {
   const { data, error } = await supabase
@@ -11,12 +9,12 @@ async function addTaskToSupabase(task) {
     .insert([task]);
 
   if (error) {
-    console.error("Error adding task:", error);
+    console.error("Error al agregar la tarea:", error);
   } else {
-    console.log("Task added:", data);
-    tasks.push(task); // Actualiza la lista local de tareas
-    renderTasks();
-    clearFields();
+    console.log("Tarea agregada:", data);
+    tasks.push(data[0]); // Asegúrate de que `tasks` esté definido y se actualice correctamente.
+    renderTasks(); // Si tienes una función para renderizar las tareas en la interfaz.
+    clearFields(); // Función que limpia los campos del formulario.
   }
 }
 
@@ -34,7 +32,7 @@ function addTask() {
     return;
   }
 
-  const encryptedEmail = email ? encryptEmail(email) : ''; 
+  const encryptedEmail = email ? encryptEmail(email) : ''; // Asegúrate de tener la función `encryptEmail` definida.
   const newTask = {
     section,
     title,
@@ -49,23 +47,22 @@ function addTask() {
   addTaskToSupabase(newTask);
 }
 
-
 async function loadTasksFromSupabase() {
   const { data, error } = await supabase
     .from('tasks')
     .select('*');
 
   if (error) {
-    console.error("Error loading tasks:", error);
+    console.error("Error al cargar las tareas:", error);
   } else {
     tasks = data;
-    renderTasks();
+    renderTasks(); // Si tienes una función para renderizar las tareas en la interfaz.
   }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   loadTasksFromSupabase();
-  setDefaultDateTime();
+  setDefaultDateTime(); // Asegúrate de que `setDefaultDateTime` esté definida.
 });
 
 async function updateTaskInSupabase(taskId, updatedTask) {
@@ -75,10 +72,10 @@ async function updateTaskInSupabase(taskId, updatedTask) {
     .eq('id', taskId);
 
   if (error) {
-    console.error("Error updating task:", error);
+    console.error("Error al actualizar la tarea:", error);
   } else {
-    console.log("Task updated:", data);
-    renderTasks();
+    console.log("Tarea actualizada:", data);
+    renderTasks(); // Si tienes una función para renderizar las tareas en la interfaz.
   }
 }
 
@@ -89,9 +86,9 @@ async function deleteTaskFromSupabase(taskId) {
     .eq('id', taskId);
 
   if (error) {
-    console.error("Error deleting task:", error);
+    console.error("Error al eliminar la tarea:", error);
   } else {
-    console.log("Task deleted:", data);
-    renderTasks();
+    console.log("Tarea eliminada:", data);
+    renderTasks(); // Si tienes una función para renderizar las tareas en la interfaz.
   }
 }
