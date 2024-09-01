@@ -1,5 +1,4 @@
 // Configuración de Supabase
-// Configuración de Supabase
 import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = 'https://tsiiqfmwyjyufpnxsnps.supabase.co'
 const supabaseKey = process.env.SUPABASE_KEY
