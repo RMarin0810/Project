@@ -1,8 +1,7 @@
 // Configuración de Supabase
-import { createClient } from '@supabase/supabase-js'
-const supabaseUrl = 'https://tsiiqfmwyjyufpnxsnps.supabase.co'
-const supabaseKey = process.env.SUPABASE_KEY
-const supabase = createClient(supabaseUrl, supabaseKey)
+const supabaseUrl = 'https://tsiiqfmwyjyufpnxsnps.supabase.co';
+const supabaseKey = 'tu_clave_publica_de_supabase_aqui'; // Asegúrate de que esta clave sea segura y correcta
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
 let selectedTaskId = null;
 
@@ -15,7 +14,7 @@ async function addTaskToSupabase(task) {
     console.error("Error al agregar la tarea:", error);
   } else {
     console.log("Tarea agregada:", data);
-    loadTasksFromSupabase(); // Recargar las tareas después de agregar
+    loadTasksFromSupabase();
     clearFields();
   }
 }
@@ -34,32 +33,22 @@ function addTask() {
     return;
   }
 
-  const encryptedEmail = email ? encryptEmail(email) : ''; 
   const newTask = {
     section,
     title,
     details,
     date_time: dateTime,
-    email: encryptedEmail,
+    email,
     deadline,
     person_in_charge: personInCharge,
     status: 'Pendiente'
   };
 
-  addTaskToSupabase(newTask);
-}
-
-function clearFields() {
-  document.getElementById('title').value = '';
-  document.getElementById('details').value = '';
-  document.getElementById('date-time').value = '';
-  document.getElementById('section').value = '';
-  document.getElementById('email').value = '';
-  document.getElementById('deadline').value = '';
-  document.getElementById('person-in-charge').value = '';
-  selectedTaskId = null;
-  document.getElementById('edit-task').disabled = true;
-  document.getElementById('delete-task').disabled = true;
+  if (selectedTaskId) {
+    updateTaskInSupabase(selectedTaskId, newTask);
+  } else {
+    addTaskToSupabase(newTask);
+  }
 }
 
 async function loadTasksFromSupabase() {
@@ -75,54 +64,68 @@ async function loadTasksFromSupabase() {
 }
 
 function renderTasks(tasks) {
-  const tasksTable = document.getElementById('tasks-table').querySelector('tbody');
-  tasksTable.innerHTML = ''; // Limpiar la tabla antes de renderizar
+  const tasksTableBody = document.querySelector('#tasks-table tbody');
+  tasksTableBody.innerHTML = '';
 
   tasks.forEach(task => {
-    const row = tasksTable.insertRow();
+    const row = document.createElement('tr');
 
-    row.insertCell(0).textContent = task.section;
-    row.insertCell(1).textContent = task.title;
-    row.insertCell(2).textContent = task.details;
-    row.insertCell(3).textContent = new Date(task.date_time).toLocaleString();
-    row.insertCell(4).textContent = decryptEmail(task.email); // Asumiendo que tienes una función decryptEmail
-    row.insertCell(5).textContent = new Date(task.deadline).toLocaleString();
-    row.insertCell(6).textContent = task.person_in_charge;
-    row.insertCell(7).textContent = task.status;
+    row.innerHTML = `
+      <td>${task.section}</td>
+      <td>${task.title}</td>
+      <td>${task.details}</td>
+      <td>${task.date_time}</td>
+      <td>${task.email}</td>
+      <td>${task.deadline}</td>
+      <td>${task.person_in_charge}</td>
+      <td>${task.status}</td>
+      <td><button class="edit-btn" data-id="${task.id}">Editar</button></td>
+      <td><button class="delete-btn" data-id="${task.id}">Eliminar</button></td>
+    `;
 
-    // Checkbox para marcar como completado
-    const completeCheckbox = document.createElement('input');
-    completeCheckbox.type = 'checkbox';
-    completeCheckbox.checked = task.status === 'Completado';
-    completeCheckbox.addEventListener('change', () => {
-      updateTaskInSupabase(task.id, { status: completeCheckbox.checked ? 'Completado' : 'Pendiente' });
+    tasksTableBody.appendChild(row);
+  });
+
+  document.querySelectorAll('.edit-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      editTask(button.dataset.id);
     });
-    row.insertCell(8).appendChild(completeCheckbox);
+  });
 
-    // Botón para editar
-    const editButton = document.createElement('button');
-    editButton.textContent = 'Editar';
-    editButton.addEventListener('click', () => selectTaskForEditing(task));
-    row.insertCell(9).appendChild(editButton);
-    
-    row.addEventListener('click', () => {
-      selectTaskForEditing(task);
+  document.querySelectorAll('.delete-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      deleteTask(button.dataset.id);
     });
   });
 }
 
-function selectTaskForEditing(task) {
-  selectedTaskId = task.id;
-  document.getElementById('title').value = task.title;
-  document.getElementById('details').value = task.details;
-  document.getElementById('date-time').value = task.date_time;
-  document.getElementById('section').value = task.section;
-  document.getElementById('email').value = decryptEmail(task.email);
-  document.getElementById('deadline').value = task.deadline;
-  document.getElementById('person-in-charge').value = task.person_in_charge;
+function clearFields() {
+  document.getElementById('task-form').reset();
+  selectedTaskId = null;
+}
 
-  document.getElementById('edit-task').disabled = false;
-  document.getElementById('delete-task').disabled = false;
+async function editTask(taskId) {
+  const { data, error } = await supabase
+    .from('tasks')
+    .select('*')
+    .eq('id', taskId)
+    .single();
+
+  if (error) {
+    console.error("Error al cargar la tarea:", error);
+  } else {
+    document.getElementById('section').value = data.section;
+    document.getElementById('title').value = data.title;
+    document.getElementById('details').value = data.details;
+    document.getElementById('date-time').value = data.date_time;
+    document.getElementById('deadline').value = data.deadline;
+    document.getElementById('email').value = data.email;
+    document.getElementById('person-in-charge').value = data
+
+.person_in_charge;
+
+    selectedTaskId = data.id;
+  }
 }
 
 async function updateTaskInSupabase(taskId, updatedTask) {
@@ -135,12 +138,12 @@ async function updateTaskInSupabase(taskId, updatedTask) {
     console.error("Error al actualizar la tarea:", error);
   } else {
     console.log("Tarea actualizada:", data);
-    loadTasksFromSupabase(); // Recargar las tareas después de actualizar
+    loadTasksFromSupabase();
     clearFields();
   }
 }
 
-async function deleteTaskFromSupabase(taskId) {
+async function deleteTask(taskId) {
   const { data, error } = await supabase
     .from('tasks')
     .delete()
@@ -150,44 +153,18 @@ async function deleteTaskFromSupabase(taskId) {
     console.error("Error al eliminar la tarea:", error);
   } else {
     console.log("Tarea eliminada:", data);
-    loadTasksFromSupabase(); // Recargar las tareas después de eliminar
-    clearFields();
+    loadTasksFromSupabase();
   }
 }
 
-// Funciones para manejar los botones
 document.getElementById('add-task').addEventListener('click', addTask);
-document.getElementById('edit-task').addEventListener('click', () => {
-  if (selectedTaskId) {
-    const updatedTask = {
-      section: document.getElementById('section').value,
-      title: document.getElementById('title').value.trim(),
-      details: document.getElementById('details').value.trim(),
-      date_time: document.getElementById('date-time').value,
-      email: encryptEmail(document.getElementById('email').value.trim()),
-      deadline: document.getElementById('deadline').value,
-      person_in_charge: document.getElementById('person-in-charge').value.trim(),
-      status: 'Pendiente'
-    };
-    updateTaskInSupabase(selectedTaskId, updatedTask);
-  }
-});
-
+document.getElementById('edit-task').addEventListener('click', addTask);
 document.getElementById('delete-task').addEventListener('click', () => {
   if (selectedTaskId) {
-    deleteTaskFromSupabase(selectedTaskId);
+    deleteTask(selectedTaskId);
+  } else {
+    alert('Seleccione una tarea para eliminar.');
   }
 });
 
-// Función para cargar las tareas al iniciar la aplicación
 document.addEventListener('DOMContentLoaded', loadTasksFromSupabase);
-
-// Función para encriptar el correo (ejemplo básico)
-function encryptEmail(email) {
-  return btoa(email); // Base64 encoding como ejemplo simple
-}
-
-// Función para desencriptar el correo
-function decryptEmail(encryptedEmail) {
-  return atob(encryptedEmail);
-}
