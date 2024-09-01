@@ -1,7 +1,9 @@
 // Configuración de Supabase
-const supabaseUrl = 'https://tsiiqfmwyjyufpnxsnps.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzaWlxZm13eWp5dWZwbnhzbnBzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjQ4OTcyNzMsImV4cCI6MjA0MDQ3MzI3M30.rwXtg9LCO1g_Us2BdrXwaK4Y0UfD-Fndax7RPYQgtkI';
-const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+import { createClient } from '@supabase/supabase-js'
+const supabaseUrl = 'https://tsiiqfmwyjyufpnxsnps.supabase.co'
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzaWlxZm13eWp5dWZwbnhzbnBzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyNDg5NzI3MywiZXhwIjoyMDQwNDczMjczfQ.E0dI9DbJlWBfyrWWsd34jbECYzdkfddD9Yp90c5QFr4';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzaWlxZm13eWp5dWZwbnhzbnBzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjQ4OTcyNzMsImV4cCI6MjA0MDQ3MzI3M30.rwXtg9LCO1g_Us2BdrXwaK4Y0UfD-Fndax7RPYQgtkI';
+//const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
 let selectedTaskId = null;
 
