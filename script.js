@@ -1,6 +1,6 @@
 // Configuración de Supabase
 const supabaseUrl = 'https://tsiiqfmwyjyufpnxsnps.supabase.co';
-const supabaseKey = 'tu_clave_publica_de_supabase_aqui'; // Asegúrate de que esta clave sea segura y correcta
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzaWlxZm13eWp5dWZwbnhzbnBzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjQ4OTcyNzMsImV4cCI6MjA0MDQ3MzI3M30.rwXtg9LCO1g_Us2BdrXwaK4Y0UfD-Fndax7RPYQgtkI';
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
 let selectedTaskId = null;
