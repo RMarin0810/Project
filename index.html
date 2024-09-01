@@ -1,20 +1,20 @@
 <!DOCTYPE html>
-<html lang="es">
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gestor de Tareas</title>
   <link rel="stylesheet" href="styles.css">
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script src="script.js" defer></script>
+  <!-- Supabase JS Library -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 <body>
   <div class="container">
     <h1>Gestor de Tareas</h1>
     <form id="task-form">
+      <!-- Formulario para añadir tareas -->
       <label for="section">Sección:</label>
-      <select id="section" required>
+      <select id="section">
         <option value="Agenda ISJUP">Agenda ISJUP</option>
         <option value="Correo">Correo</option>
         <option value="Evaluación de Desempeño">Evaluación de Desempeño</option>
@@ -26,31 +26,24 @@
         <option value="Tareas">Tareas</option>
         <option value="Reuniones">Reuniones</option>
       </select>
-
       <label for="title">Título:</label>
       <input type="text" id="title" placeholder="Ingrese título" required>
-
       <label for="details">Detalles:</label>
       <textarea id="details" placeholder="Ingrese detalles" required></textarea>
-
       <label for="date-time">Fecha de inicio:</label>
       <input type="datetime-local" id="date-time" required>
-
       <label for="deadline">Fecha límite:</label>
       <input type="datetime-local" id="deadline" required>
-
       <label for="email">Correo:</label>
       <input type="email" id="email" placeholder="Ingrese Correo (opcional)">
-
       <label for="person-in-charge">Encargado:</label>
       <input type="text" id="person-in-charge" placeholder="Ingrese Nombre de Encargado">
-
       <button type="button" id="add-task">Añadir Tarea</button>
-      <button type="button" id="edit-task">Editar Tarea</button>
-      <button type="button" id="delete-task">Eliminar Tarea</button>
+      <button type="button" id="edit-task" disabled>Editar Tarea</button>
+      <button type="button" id="delete-task" disabled>Eliminar Tarea</button>
     </form>
 
-    <h2>Lista de Tareas</h2>
+    <!-- Tabla de Tareas -->
     <table id="tasks-table">
       <thead>
         <tr>
@@ -62,12 +55,31 @@
           <th>Fecha Límite</th>
           <th>Encargado</th>
           <th>Estado</th>
+          <th>Completado</th>
           <th>Editar</th>
-          <th>Eliminar</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <!-- Tabla de Historial -->
+    <h2>Historial de Tareas</h2>
+    <table id="history-table">
+      <thead>
+        <tr>
+          <th>Sección</th>
+          <th>Título</th>
+          <th>Detalles</th>
+          <th>Fecha Inicial</th>
+          <th>Correo</th>
+          <th>Fecha Límite</th>
+          <th>Encargado</th>
+          <th>Estado</th>
         </tr>
       </thead>
       <tbody></tbody>
     </table>
   </div>
+  <script src="script.js"></script>
 </body>
 </html>
