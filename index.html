@@ -6,8 +6,8 @@
   <title>Gestor de Tareas</title>
   <link rel="stylesheet" href="styles.css">
   <!-- Supabase JS Library -->
-  <script src="https://unpkg.com/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
   <script src="script.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 <body>
   <div class="container">
@@ -81,5 +81,10 @@
       <tbody></tbody>
     </table>
   </div>
+  <script type="module">
+    // Inicialización de Supabase
+    const supabaseUrl = 'https://tu-supabase-url';
+    const supabaseKey = 'tu-supabase-key';
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+</script>
 </body>
-</html>
