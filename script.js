@@ -1,9 +1,10 @@
 // Configuración de Supabase
-import { createClient } from '@supabase/supabase-js'
-const supabaseUrl = 'https://tsiiqfmwyjyufpnxsnps.supabase.co'
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = 'https://tsiiqfmwyjyufpnxsnps.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzaWlxZm13eWp5dWZwbnhzbnBzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyNDg5NzI3MywiZXhwIjoyMDQwNDczMjczfQ.E0dI9DbJlWBfyrWWsd34jbECYzdkfddD9Yp90c5QFr4';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzaWlxZm13eWp5dWZwbnhzbnBzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjQ4OTcyNzMsImV4cCI6MjA0MDQ3MzI3M30.rwXtg9LCO1g_Us2BdrXwaK4Y0UfD-Fndax7RPYQgtkI';
-//const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 let selectedTaskId = null;
 
@@ -16,7 +17,7 @@ async function addTaskToSupabase(task) {
     console.error("Error al agregar la tarea:", error);
   } else {
     console.log("Tarea agregada:", data);
-    loadTasksFromSupabase();
+    loadTasksFromSupabase(); // Recargar las tareas después de agregar
     clearFields();
   }
 }
@@ -35,22 +36,32 @@ function addTask() {
     return;
   }
 
+  const encryptedEmail = email ? encryptEmail(email) : ''; 
   const newTask = {
     section,
     title,
     details,
     date_time: dateTime,
-    email,
+    email: encryptedEmail,
     deadline,
     person_in_charge: personInCharge,
     status: 'Pendiente'
   };
 
-  if (selectedTaskId) {
-    updateTaskInSupabase(selectedTaskId, newTask);
-  } else {
-    addTaskToSupabase(newTask);
-  }
+  addTaskToSupabase(newTask);
+}
+
+function clearFields() {
+  document.getElementById('title').value = '';
+  document.getElementById('details').value = '';
+  document.getElementById('date-time').value = '';
+  document.getElementById('section').value = '';
+  document.getElementById('email').value = '';
+  document.getElementById('deadline').value = '';
+  document.getElementById('person-in-charge').value = '';
+  selectedTaskId = null;
+  document.getElementById('edit-task').disabled = true;
+  document.getElementById('delete-task').disabled = true;
 }
 
 async function loadTasksFromSupabase() {
@@ -66,68 +77,54 @@ async function loadTasksFromSupabase() {
 }
 
 function renderTasks(tasks) {
-  const tasksTableBody = document.querySelector('#tasks-table tbody');
-  tasksTableBody.innerHTML = '';
+  const tasksTable = document.getElementById('tasks-table').querySelector('tbody');
+  tasksTable.innerHTML = ''; // Limpiar la tabla antes de renderizar
 
   tasks.forEach(task => {
-    const row = document.createElement('tr');
+    const row = tasksTable.insertRow();
 
-    row.innerHTML = `
-      <td>${task.section}</td>
-      <td>${task.title}</td>
-      <td>${task.details}</td>
-      <td>${task.date_time}</td>
-      <td>${task.email}</td>
-      <td>${task.deadline}</td>
-      <td>${task.person_in_charge}</td>
-      <td>${task.status}</td>
-      <td><button class="edit-btn" data-id="${task.id}">Editar</button></td>
-      <td><button class="delete-btn" data-id="${task.id}">Eliminar</button></td>
-    `;
+    row.insertCell(0).textContent = task.section;
+    row.insertCell(1).textContent = task.title;
+    row.insertCell(2).textContent = task.details;
+    row.insertCell(3).textContent = new Date(task.date_time).toLocaleString();
+    row.insertCell(4).textContent = decryptEmail(task.email); // Asumiendo que tienes una función decryptEmail
+    row.insertCell(5).textContent = new Date(task.deadline).toLocaleString();
+    row.insertCell(6).textContent = task.person_in_charge;
+    row.insertCell(7).textContent = task.status;
 
-    tasksTableBody.appendChild(row);
-  });
-
-  document.querySelectorAll('.edit-btn').forEach(button => {
-    button.addEventListener('click', () => {
-      editTask(button.dataset.id);
+    // Checkbox para marcar como completado
+    const completeCheckbox = document.createElement('input');
+    completeCheckbox.type = 'checkbox';
+    completeCheckbox.checked = task.status === 'Completado';
+    completeCheckbox.addEventListener('change', () => {
+      updateTaskInSupabase(task.id, { status: completeCheckbox.checked ? 'Completado' : 'Pendiente' });
     });
-  });
+    row.insertCell(8).appendChild(completeCheckbox);
 
-  document.querySelectorAll('.delete-btn').forEach(button => {
-    button.addEventListener('click', () => {
-      deleteTask(button.dataset.id);
+    // Botón para editar
+    const editButton = document.createElement('button');
+    editButton.textContent = 'Editar';
+    editButton.addEventListener('click', () => selectTaskForEditing(task));
+    row.insertCell(9).appendChild(editButton);
+    
+    row.addEventListener('click', () => {
+      selectTaskForEditing(task);
     });
   });
 }
 
-function clearFields() {
-  document.getElementById('task-form').reset();
-  selectedTaskId = null;
-}
+function selectTaskForEditing(task) {
+  selectedTaskId = task.id;
+  document.getElementById('title').value = task.title;
+  document.getElementById('details').value = task.details;
+  document.getElementById('date-time').value = task.date_time;
+  document.getElementById('section').value = task.section;
+  document.getElementById('email').value = decryptEmail(task.email);
+  document.getElementById('deadline').value = task.deadline;
+  document.getElementById('person-in-charge').value = task.person_in_charge;
 
-async function editTask(taskId) {
-  const { data, error } = await supabase
-    .from('tasks')
-    .select('*')
-    .eq('id', taskId)
-    .single();
-
-  if (error) {
-    console.error("Error al cargar la tarea:", error);
-  } else {
-    document.getElementById('section').value = data.section;
-    document.getElementById('title').value = data.title;
-    document.getElementById('details').value = data.details;
-    document.getElementById('date-time').value = data.date_time;
-    document.getElementById('deadline').value = data.deadline;
-    document.getElementById('email').value = data.email;
-    document.getElementById('person-in-charge').value = data
-
-.person_in_charge;
-
-    selectedTaskId = data.id;
-  }
+  document.getElementById('edit-task').disabled = false;
+  document.getElementById('delete-task').disabled = false;
 }
 
 async function updateTaskInSupabase(taskId, updatedTask) {
@@ -140,12 +137,12 @@ async function updateTaskInSupabase(taskId, updatedTask) {
     console.error("Error al actualizar la tarea:", error);
   } else {
     console.log("Tarea actualizada:", data);
-    loadTasksFromSupabase();
+    loadTasksFromSupabase(); // Recargar las tareas después de actualizar
     clearFields();
   }
 }
 
-async function deleteTask(taskId) {
+async function deleteTaskFromSupabase(taskId) {
   const { data, error } = await supabase
     .from('tasks')
     .delete()
@@ -155,18 +152,44 @@ async function deleteTask(taskId) {
     console.error("Error al eliminar la tarea:", error);
   } else {
     console.log("Tarea eliminada:", data);
-    loadTasksFromSupabase();
+    loadTasksFromSupabase(); // Recargar las tareas después de eliminar
+    clearFields();
   }
 }
 
+// Funciones para manejar los botones
 document.getElementById('add-task').addEventListener('click', addTask);
-document.getElementById('edit-task').addEventListener('click', addTask);
-document.getElementById('delete-task').addEventListener('click', () => {
+document.getElementById('edit-task').addEventListener('click', () => {
   if (selectedTaskId) {
-    deleteTask(selectedTaskId);
-  } else {
-    alert('Seleccione una tarea para eliminar.');
+    const updatedTask = {
+      section: document.getElementById('section').value,
+      title: document.getElementById('title').value.trim(),
+      details: document.getElementById('details').value.trim(),
+      date_time: document.getElementById('date-time').value,
+      email: encryptEmail(document.getElementById('email').value.trim()),
+      deadline: document.getElementById('deadline').value,
+      person_in_charge: document.getElementById('person-in-charge').value.trim(),
+      status: 'Pendiente'
+    };
+    updateTaskInSupabase(selectedTaskId, updatedTask);
   }
 });
 
+document.getElementById('delete-task').addEventListener('click', () => {
+  if (selectedTaskId) {
+    deleteTaskFromSupabase(selectedTaskId);
+  }
+});
+
+// Función para cargar las tareas al iniciar la aplicación
 document.addEventListener('DOMContentLoaded', loadTasksFromSupabase);
+
+// Función para encriptar el correo (ejemplo básico)
+function encryptEmail(email) {
+  return btoa(email); // Base64 encoding como ejemplo simple
+}
+
+// Función para desencriptar el correo
+function decryptEmail(encryptedEmail) {
+  return atob(encryptedEmail);
+}
