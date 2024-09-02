@@ -1,195 +1,71 @@
-// Configuración de Supabase
-import { createClient } from '@supabase/supabase-js';
+// Configuración de Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyDb7448QL73qBrC_YdNiXMGYD0QZH-i7-c",
+  authDomain: "taskmaster-f650b.firebaseapp.com",
+  projectId: "taskmaster-f650b",
+  storageBucket: "taskmaster-f650b.appspot.com",
+  messagingSenderId: "196468952105",
+  appId: "1:196468952105:web:c71cb539331e3e8f882038"
+};
 
-const supabaseUrl = 'https://tsiiqfmwyjyufpnxsnps.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzaWlxZm13eWp5dWZwbnhzbnBzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyNDg5NzI3MywiZXhwIjoyMDQwNDczMjczfQ.E0dI9DbJlWBfyrWWsd34jbECYzdkfddD9Yp90c5QFr4';
+// Inicializar Firebase
+const app = firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-let selectedTaskId = null;
-
-async function addTaskToSupabase(task) {
-  const { data, error } = await supabase
-    .from('tasks')
-    .insert([task]);
-
-  if (error) {
-    console.error("Error al agregar la tarea:", error);
-  } else {
-    console.log("Tarea agregada:", data);
-    loadTasksFromSupabase(); // Recargar las tareas después de agregar
-    clearFields();
-  }
-}
-
-function addTask() {
-  const title = document.getElementById('title').value.trim();
-  const details = document.getElementById('details').value.trim();
-  const dateTime = document.getElementById('date-time').value;
+// Añadir Tarea
+document.getElementById('add-task').addEventListener('click', async () => {
   const section = document.getElementById('section').value;
-  const email = document.getElementById('email').value.trim();
+  const title = document.getElementById('title').value;
+  const details = document.getElementById('details').value;
+  const dateTime = document.getElementById('date-time').value;
   const deadline = document.getElementById('deadline').value;
-  const personInCharge = document.getElementById('person-in-charge').value.trim();
 
-  if (!title || !details || !dateTime || !section || !deadline) {
-    alert('Por favor, complete todos los campos obligatorios.');
+  if (title.trim() === '' || details.trim() === '' || dateTime === '' || deadline === '') {
+    alert('Por favor, complete todos los campos.');
     return;
   }
 
-  const encryptedEmail = email ? encryptEmail(email) : ''; 
-  const newTask = {
+  await db.collection('tasks').add({
     section,
     title,
     details,
-    date_time: dateTime,
-    email: encryptedEmail,
+    dateTime,
     deadline,
-    person_in_charge: personInCharge,
-    status: 'Pendiente'
-  };
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
 
-  addTaskToSupabase(newTask);
-}
+  document.getElementById('task-form').reset();
+  loadTasks();
+});
 
-function clearFields() {
-  document.getElementById('title').value = '';
-  document.getElementById('details').value = '';
-  document.getElementById('date-time').value = '';
-  document.getElementById('section').value = '';
-  document.getElementById('email').value = '';
-  document.getElementById('deadline').value = '';
-  document.getElementById('person-in-charge').value = '';
-  selectedTaskId = null;
-  document.getElementById('edit-task').disabled = true;
-  document.getElementById('delete-task').disabled = true;
-}
+// Cargar Tareas
+const loadTasks = async () => {
+  const tasksTable = document.getElementById('tasks-table').getElementsByTagName('tbody')[0];
+  tasksTable.innerHTML = '';
 
-async function loadTasksFromSupabase() {
-  const { data, error } = await supabase
-    .from('tasks')
-    .select('*');
-
-  if (error) {
-    console.error("Error al cargar las tareas:", error);
-  } else {
-    renderTasks(data);
-  }
-}
-
-function renderTasks(tasks) {
-  const tasksTable = document.getElementById('tasks-table').querySelector('tbody');
-  tasksTable.innerHTML = ''; // Limpiar la tabla antes de renderizar
-
-  tasks.forEach(task => {
+  const snapshot = await db.collection('tasks').orderBy('createdAt', 'desc').get();
+  snapshot.forEach(doc => {
+    const task = doc.data();
     const row = tasksTable.insertRow();
+    row.innerHTML = `
+      <td>${task.section}</td>
+      <td>${task.title}</td>
+      <td>${task.details}</td>
+      <td>${task.dateTime}</td>
+      <td>${task.deadline}</td>
+      <td><button class="delete" data-id="${doc.id}">Eliminar</button></td>
+    `;
+  });
 
-    row.insertCell(0).textContent = task.section;
-    row.insertCell(1).textContent = task.title;
-    row.insertCell(2).textContent = task.details;
-    row.insertCell(3).textContent = new Date(task.date_time).toLocaleString();
-    row.insertCell(4).textContent = decryptEmail(task.email); // Asumiendo que tienes una función decryptEmail
-    row.insertCell(5).textContent = new Date(task.deadline).toLocaleString();
-    row.insertCell(6).textContent = task.person_in_charge;
-    row.insertCell(7).textContent = task.status;
-
-    // Checkbox para marcar como completado
-    const completeCheckbox = document.createElement('input');
-    completeCheckbox.type = 'checkbox';
-    completeCheckbox.checked = task.status === 'Completado';
-    completeCheckbox.addEventListener('change', () => {
-      updateTaskInSupabase(task.id, { status: completeCheckbox.checked ? 'Completado' : 'Pendiente' });
-    });
-    row.insertCell(8).appendChild(completeCheckbox);
-
-    // Botón para editar
-    const editButton = document.createElement('button');
-    editButton.textContent = 'Editar';
-    editButton.addEventListener('click', () => selectTaskForEditing(task));
-    row.insertCell(9).appendChild(editButton);
-    
-    row.addEventListener('click', () => {
-      selectTaskForEditing(task);
+  // Añadir evento de eliminar a los botones
+  document.querySelectorAll('.delete').forEach(button => {
+    button.addEventListener('click', async (e) => {
+      const taskId = e.target.getAttribute('data-id');
+      await db.collection('tasks').doc(taskId).delete();
+      loadTasks();
     });
   });
-}
+};
 
-function selectTaskForEditing(task) {
-  selectedTaskId = task.id;
-  document.getElementById('title').value = task.title;
-  document.getElementById('details').value = task.details;
-  document.getElementById('date-time').value = task.date_time;
-  document.getElementById('section').value = task.section;
-  document.getElementById('email').value = decryptEmail(task.email);
-  document.getElementById('deadline').value = task.deadline;
-  document.getElementById('person-in-charge').value = task.person_in_charge;
-
-  document.getElementById('edit-task').disabled = false;
-  document.getElementById('delete-task').disabled = false;
-}
-
-async function updateTaskInSupabase(taskId, updatedTask) {
-  const { data, error } = await supabase
-    .from('tasks')
-    .update(updatedTask)
-    .eq('id', taskId);
-
-  if (error) {
-    console.error("Error al actualizar la tarea:", error);
-  } else {
-    console.log("Tarea actualizada:", data);
-    loadTasksFromSupabase(); // Recargar las tareas después de actualizar
-    clearFields();
-  }
-}
-
-async function deleteTaskFromSupabase(taskId) {
-  const { data, error } = await supabase
-    .from('tasks')
-    .delete()
-    .eq('id', taskId);
-
-  if (error) {
-    console.error("Error al eliminar la tarea:", error);
-  } else {
-    console.log("Tarea eliminada:", data);
-    loadTasksFromSupabase(); // Recargar las tareas después de eliminar
-    clearFields();
-  }
-}
-
-// Funciones para manejar los botones
-document.getElementById('add-task').addEventListener('click', addTask);
-document.getElementById('edit-task').addEventListener('click', () => {
-  if (selectedTaskId) {
-    const updatedTask = {
-      section: document.getElementById('section').value,
-      title: document.getElementById('title').value.trim(),
-      details: document.getElementById('details').value.trim(),
-      date_time: document.getElementById('date-time').value,
-      email: encryptEmail(document.getElementById('email').value.trim()),
-      deadline: document.getElementById('deadline').value,
-      person_in_charge: document.getElementById('person-in-charge').value.trim(),
-      status: 'Pendiente'
-    };
-    updateTaskInSupabase(selectedTaskId, updatedTask);
-  }
-});
-
-document.getElementById('delete-task').addEventListener('click', () => {
-  if (selectedTaskId) {
-    deleteTaskFromSupabase(selectedTaskId);
-  }
-});
-
-// Función para cargar las tareas al iniciar la aplicación
-document.addEventListener('DOMContentLoaded', loadTasksFromSupabase);
-
-// Función para encriptar el correo (ejemplo básico)
-function encryptEmail(email) {
-  return btoa(email); // Base64 encoding como ejemplo simple
-}
-
-// Función para desencriptar el correo
-function decryptEmail(encryptedEmail) {
-  return atob(encryptedEmail);
-}
+// Cargar las tareas cuando la página se carga
+window.onload = loadTasks;
